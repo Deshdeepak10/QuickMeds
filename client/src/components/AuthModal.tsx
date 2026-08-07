@@ -8,7 +8,10 @@ import { useAuth, UserRole, PRESET_USERS } from "@/contexts/AuthContext";
 import { User, Building2, Bike, ShieldCheck, ArrowRight, KeyRound, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
+import { useLocation } from "wouter";
+
 export function AuthModal() {
+  const [, setLocation] = useLocation();
   const { isAuthModalOpen, setIsAuthModalOpen, loginAsRole, loginWithCustom, setIsPhoneSignupModalOpen, setPhoneSignupRole, setIsPharmacyRegisterModalOpen } = useAuth();
   const [selectedRole, setSelectedRole] = useState<UserRole>("patient");
   const [customName, setCustomName] = useState("");
@@ -23,6 +26,7 @@ export function AuthModal() {
     }
     loginWithCustom(customName, selectedRole, customEmail);
     toast.success(`Signed in as ${customName} (${selectedRole.toUpperCase()})`);
+    setLocation("/app");
   };
 
   return (
@@ -70,10 +74,11 @@ export function AuthModal() {
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
               onClick={() => {
                 loginAsRole(selectedRole);
-                toast.success(`Switched to ${selectedRole.toUpperCase()} mode!`);
+                toast.success(`Signed in as ${selectedRole.toUpperCase()}!`);
+                setLocation("/app");
               }}
             >
-              1-Click Demo Login <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              Sign In <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           </div>
 
