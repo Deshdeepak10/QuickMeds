@@ -70,6 +70,7 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
 
 interface AuthContextType {
   user: UserSession;
+  isAuthenticated: boolean;
   loginAsRole: (role: UserRole) => void;
   loginWithCustom: (name: string, role: UserRole, email: string) => void;
   registerPharmacyStore: (store: Omit<PharmacyStoreData, "id" | "distance" | "rating" | "stockMatched" | "etaMinutes">) => void;
@@ -90,6 +91,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserSession>(PRESET_USERS.patient);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isPharmacyRegisterModalOpen, setIsPharmacyRegisterModalOpen] = useState(false);
   const [isPhoneSignupModalOpen, setIsPhoneSignupModalOpen] = useState(false);
@@ -130,6 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginAsRole = (role: UserRole) => {
     setUser(PRESET_USERS[role]);
+    setIsAuthenticated(true);
     setIsAuthModalOpen(false);
   };
 
@@ -142,6 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       badge: `${role.toUpperCase()} #${Math.floor(1000 + Math.random() * 9000)}`,
       avatar: role === "patient" ? "👩‍💼" : role === "pharmacy" ? "🏥" : "🏍️"
     });
+    setIsAuthenticated(true);
     setIsAuthModalOpen(false);
   };
 
@@ -170,6 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       location: newStore.address
     });
 
+    setIsAuthenticated(true);
     setIsPharmacyRegisterModalOpen(false);
   };
 
@@ -188,10 +193,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       location: data.location || "Indiranagar, Bangalore"
     });
 
+    setIsAuthenticated(true);
     setIsPhoneSignupModalOpen(false);
   };
 
   const logout = () => {
+    setIsAuthenticated(false);
     setUser(PRESET_USERS.patient);
   };
 
@@ -199,6 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        isAuthenticated,
         loginAsRole,
         loginWithCustom,
         registerPharmacyStore,

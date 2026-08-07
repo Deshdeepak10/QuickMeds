@@ -8,6 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { AuthModal } from "./components/AuthModal";
 import { PharmacyRegisterModal } from "./components/PharmacyRegisterModal";
 import { PhoneSignupModal } from "./components/PhoneSignupModal";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import MedicineDelivery from "./pages/MedicineDelivery";
 import MedicineMVP from "./pages/MedicineMVP";
 import LoginHome from "./pages/LoginHome";
@@ -19,8 +20,12 @@ function Router() {
     <Switch>
       <Route path={"/"} component={LoginHome} />
       <Route path={"/login"} component={LoginHome} />
-      <Route path={"/app"} component={MedicineMVP} />
-      <Route path={"/medicine-mvp"} component={MedicineMVP} />
+      <Route path={"/app"}>
+        {() => <ProtectedRoute component={MedicineMVP} />}
+      </Route>
+      <Route path={"/medicine-mvp"}>
+        {() => <ProtectedRoute component={MedicineMVP} />}
+      </Route>
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={LoginHome} />

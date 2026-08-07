@@ -151,7 +151,7 @@ const PHARMACIES = [
 
 export default function MedicineMVP() {
   const [, setLocation] = useLocation();
-  const { user, setIsAuthModalOpen, registeredPharmacies, setIsPharmacyRegisterModalOpen } = useAuth();
+  const { user, setIsAuthModalOpen, registeredPharmacies, setIsPharmacyRegisterModalOpen, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("ocr");
 
   // Switch default tab based on logged in role
@@ -285,9 +285,12 @@ export default function MedicineMVP() {
               size="sm"
               variant="outline"
               className="border-slate-300 text-slate-700 hover:bg-slate-100 font-medium text-xs px-3 py-1.5"
-              onClick={() => setLocation("/")}
+              onClick={() => {
+                logout();
+                setLocation("/");
+              }}
             >
-              Portal Home
+              Log Out
             </Button>
             <Button
               size="sm"
