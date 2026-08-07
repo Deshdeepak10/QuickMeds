@@ -30,6 +30,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import RevenueCalculator from "@/components/RevenueCalculator";
+import { LiveTrackingMap } from "@/components/LiveTrackingMap";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface PrescribedMed {
@@ -774,6 +775,13 @@ export default function MedicineMVP() {
             <TabsContent value="delivery" className="mt-8 space-y-6">
               <div className="grid lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-7 space-y-6">
+                  {/* Live Satellite GPS Tracking Map */}
+                  <LiveTrackingMap
+                    pharmacyName={selectedPharmacy.name}
+                    riderProgress={riderProgress}
+                    coldTemp={coldTemp}
+                  />
+
                   {/* Live Telemetry Card */}
                   <Card className="bg-white border-slate-200 text-slate-900 shadow-md">
                     <CardHeader>
