@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AuthModal } from "./components/AuthModal";
 import { PharmacyRegisterModal } from "./components/PharmacyRegisterModal";
+import { PhoneSignupModal } from "./components/PhoneSignupModal";
 import MedicineDelivery from "./pages/MedicineDelivery";
 import MedicineMVP from "./pages/MedicineMVP";
 import LoginHome from "./pages/LoginHome";
@@ -36,6 +37,7 @@ function App() {
             <Toaster />
             <AuthModal />
             <PharmacyRegisterModal />
+            <PhoneSignupModal />
             <Router />
           </TooltipProvider>
         </AuthProvider>

@@ -23,11 +23,13 @@ export interface UserSession {
   name: string;
   role: UserRole;
   email: string;
+  phone?: string;
   badge: string;
   avatar: string;
   location?: string;
   licenseNo?: string;
   shopName?: string;
+  vehicleType?: string;
 }
 
 export const PRESET_USERS: Record<UserRole, UserSession> = {
@@ -36,6 +38,7 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
     name: "Sarah Chen",
     role: "patient",
     email: "sarah.chen@example.com",
+    phone: "+91 98765 43210",
     badge: "Patient #P-8821",
     avatar: "👩‍💼",
     location: "Indiranagar, Bangalore"
@@ -45,6 +48,7 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
     name: "Apollo Express Pharmacy",
     role: "pharmacy",
     email: "hub.indiranagar@apollopharmacy.in",
+    phone: "+91 98765 11223",
     badge: "Licensed Hub #KA-2021-00921",
     avatar: "🏥",
     licenseNo: "KA-2021-00921",
@@ -56,9 +60,11 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
     name: "Vikram Singh",
     role: "rider",
     email: "vikram.rider@quickmed.in",
+    phone: "+91 98765 99887",
     badge: "Express Courier #R-4402",
     avatar: "🏍️",
-    location: "Indiranagar Zone 4"
+    location: "Indiranagar Zone 4",
+    vehicleType: "EV Scooter (Cold Storage Box)"
   }
 };
 
@@ -67,12 +73,17 @@ interface AuthContextType {
   loginAsRole: (role: UserRole) => void;
   loginWithCustom: (name: string, role: UserRole, email: string) => void;
   registerPharmacyStore: (store: Omit<PharmacyStoreData, "id" | "distance" | "rating" | "stockMatched" | "etaMinutes">) => void;
+  registerUserWithPhone: (data: { name: string; phone: string; role: "patient" | "rider"; email?: string; vehicleType?: string; location?: string }) => void;
   registeredPharmacies: PharmacyStoreData[];
   logout: () => void;
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
   isPharmacyRegisterModalOpen: boolean;
   setIsPharmacyRegisterModalOpen: (open: boolean) => void;
+  isPhoneSignupModalOpen: boolean;
+  setIsPhoneSignupModalOpen: (open: boolean) => void;
+  phoneSignupRole: "patient" | "rider";
+  setPhoneSignupRole: (role: "patient" | "rider") => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -81,6 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserSession>(PRESET_USERS.patient);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isPharmacyRegisterModalOpen, setIsPharmacyRegisterModalOpen] = useState(false);
+  const [isPhoneSignupModalOpen, setIsPhoneSignupModalOpen] = useState(false);
+  const [phoneSignupRole, setPhoneSignupRole] = useState<"patient" | "rider">("patient");
+
   const [registeredPharmacies, setRegisteredPharmacies] = useState<PharmacyStoreData[]>([
     {
       id: "p1",
@@ -126,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role,
       email,
       badge: `${role.toUpperCase()} #${Math.floor(1000 + Math.random() * 9000)}`,
-      avatar: role === "patient" ? "👤" : role === "pharmacy" ? "🏪" : "🛵"
+      avatar: role === "patient" ? "👩‍💼" : role === "pharmacy" ? "🏥" : "🏍️"
     });
     setIsAuthModalOpen(false);
   };
@@ -143,12 +157,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setRegisteredPharmacies((prev) => [newStore, ...prev]);
 
-    // Set logged-in session to this registered pharmacy
     setUser({
       id: newStore.id,
       name: newStore.shopName,
       role: "pharmacy",
       email: newStore.email,
+      phone: newStore.phone,
       badge: `DL #${newStore.licenseNo}`,
       avatar: "🏥",
       shopName: newStore.shopName,
@@ -157,6 +171,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     setIsPharmacyRegisterModalOpen(false);
+  };
+
+  const registerUserWithPhone = (data: { name: string; phone: string; role: "patient" | "rider"; email?: string; vehicleType?: string; location?: string }) => {
+    const formattedPhone = data.phone.startsWith("+91") ? data.phone : `+91 ${data.phone}`;
+
+    setUser({
+      id: `u-${Date.now()}`,
+      name: data.name,
+      role: data.role,
+      phone: formattedPhone,
+      email: data.email || `${data.phone}@quickmed.in`,
+      badge: data.role === "patient" ? `Patient #${Math.floor(1000 + Math.random() * 9000)}` : `Rider #${Math.floor(1000 + Math.random() * 9000)}`,
+      avatar: data.role === "patient" ? "👩‍💼" : "🏍️",
+      vehicleType: data.vehicleType,
+      location: data.location || "Indiranagar, Bangalore"
+    });
+
+    setIsPhoneSignupModalOpen(false);
   };
 
   const logout = () => {
@@ -170,12 +202,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginAsRole,
         loginWithCustom,
         registerPharmacyStore,
+        registerUserWithPhone,
         registeredPharmacies,
         logout,
         isAuthModalOpen,
         setIsAuthModalOpen,
         isPharmacyRegisterModalOpen,
-        setIsPharmacyRegisterModalOpen
+        setIsPharmacyRegisterModalOpen,
+        isPhoneSignupModalOpen,
+        setIsPhoneSignupModalOpen,
+        phoneSignupRole,
+        setPhoneSignupRole
       }}
     >
       {children}

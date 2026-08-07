@@ -23,7 +23,7 @@ import { toast } from "sonner";
 
 export default function LoginHome() {
   const [, setLocation] = useLocation();
-  const { loginAsRole, loginWithCustom, setIsPharmacyRegisterModalOpen } = useAuth();
+  const { loginAsRole, loginWithCustom, setIsPharmacyRegisterModalOpen, setIsPhoneSignupModalOpen, setPhoneSignupRole } = useAuth();
   
   const [selectedRole, setSelectedRole] = useState<UserRole>("patient");
   const [customName, setCustomName] = useState("");
@@ -123,8 +123,8 @@ export default function LoginHome() {
                 </ul>
               </div>
 
-              <div className="p-6 bg-slate-50 border-t border-slate-100">
-                <div className="text-xs text-slate-500 mb-3">
+              <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-2">
+                <div className="text-xs text-slate-500 mb-2">
                   Demo User: <strong className="text-slate-900">{PRESET_USERS.patient.name}</strong> ({PRESET_USERS.patient.badge})
                 </div>
                 <Button
@@ -132,6 +132,16 @@ export default function LoginHome() {
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-5 shadow-sm"
                 >
                   Enter as Patient <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setPhoneSignupRole("patient");
+                    setIsPhoneSignupModalOpen(true);
+                  }}
+                  className="w-full border-emerald-300 text-emerald-700 hover:bg-emerald-100 font-bold py-4 text-xs"
+                >
+                  📱 Sign Up Patient with Phone
                 </Button>
               </div>
             </Card>
@@ -226,8 +236,8 @@ export default function LoginHome() {
                 </ul>
               </div>
 
-              <div className="p-6 bg-slate-50 border-t border-slate-100">
-                <div className="text-xs text-slate-500 mb-3">
+              <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-2">
+                <div className="text-xs text-slate-500 mb-2">
                   Demo Rider: <strong className="text-slate-900">{PRESET_USERS.rider.name}</strong> ({PRESET_USERS.rider.badge})
                 </div>
                 <Button
@@ -235,6 +245,16 @@ export default function LoginHome() {
                   className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-5 shadow-sm"
                 >
                   Enter as Rider Courier <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setPhoneSignupRole("rider");
+                    setIsPhoneSignupModalOpen(true);
+                  }}
+                  className="w-full border-cyan-300 text-cyan-700 hover:bg-cyan-100 font-bold py-4 text-xs"
+                >
+                  📱 Sign Up Rider with Phone
                 </Button>
               </div>
             </Card>

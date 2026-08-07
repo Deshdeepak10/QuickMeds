@@ -5,11 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth, UserRole, PRESET_USERS } from "@/contexts/AuthContext";
-import { User, Building2, Bike, ShieldCheck, ArrowRight, KeyRound } from "lucide-react";
+import { User, Building2, Bike, ShieldCheck, ArrowRight, KeyRound, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
 export function AuthModal() {
-  const { isAuthModalOpen, setIsAuthModalOpen, loginAsRole, loginWithCustom, user } = useAuth();
+  const { isAuthModalOpen, setIsAuthModalOpen, loginAsRole, loginWithCustom, setIsPhoneSignupModalOpen, setPhoneSignupRole, setIsPharmacyRegisterModalOpen } = useAuth();
   const [selectedRole, setSelectedRole] = useState<UserRole>("patient");
   const [customName, setCustomName] = useState("");
   const [customEmail, setCustomEmail] = useState("");
@@ -77,8 +77,39 @@ export function AuthModal() {
             </Button>
           </div>
 
+          {/* New Sign Up Action Banner */}
+          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-xs text-slate-600 font-medium">Need a new account?</span>
+            {selectedRole === "pharmacy" ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsAuthModalOpen(false);
+                  setIsPharmacyRegisterModalOpen(true);
+                }}
+                className="border-emerald-500 text-emerald-700 hover:bg-emerald-50 font-bold text-xs"
+              >
+                + Register Pharmacy Store
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setIsAuthModalOpen(false);
+                  setPhoneSignupRole(selectedRole as "patient" | "rider");
+                  setIsPhoneSignupModalOpen(true);
+                }}
+                className="border-emerald-500 text-emerald-700 hover:bg-emerald-50 font-bold text-xs flex items-center gap-1"
+              >
+                <Smartphone className="w-3.5 h-3.5 text-emerald-600" /> Sign Up with Phone
+              </Button>
+            )}
+          </div>
+
           {/* Custom Credentials Form */}
-          <form onSubmit={handleCustomLogin} className="mt-6 space-y-4 pt-4 border-t border-slate-200">
+          <form onSubmit={handleCustomLogin} className="mt-4 space-y-4 pt-4 border-t border-slate-200">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
               <KeyRound className="w-3.5 h-3.5 text-slate-400" /> Custom Account Credentials
             </h4>
