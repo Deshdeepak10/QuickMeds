@@ -64,7 +64,7 @@ export default function LoginHome() {
             </div>
           </div>
 
-          <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50 px-3 py-1 font-medium">
+          <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50 px-3 py-1 font-medium hidden sm:inline-flex">
             <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-600" /> Secure Multi-Role Portal
           </Badge>
         </div>
