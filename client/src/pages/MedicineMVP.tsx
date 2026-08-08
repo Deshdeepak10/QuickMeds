@@ -255,7 +255,7 @@ export default function MedicineMVP() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20 md:pb-6">
       {/* Top Bar */}
       <header className="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -344,23 +344,23 @@ export default function MedicineMVP() {
       <div className="bg-white border-b border-slate-200 py-3 shadow-xs">
         <div className="container mx-auto px-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="bg-slate-100 border border-slate-200 p-1 rounded-xl grid grid-cols-2 md:grid-cols-6 gap-1">
-              <TabsTrigger value="ocr" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-semibold text-xs md:text-sm">
+            <TabsList className="bg-slate-100 border border-slate-200 p-1.5 rounded-xl flex overflow-x-auto md:grid md:grid-cols-6 gap-1.5 w-full scrollbar-none">
+              <TabsTrigger value="ocr" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3.5 py-2">
                 1. Rx OCR & Parsing
               </TabsTrigger>
-              <TabsTrigger value="verification" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-semibold text-xs md:text-sm">
+              <TabsTrigger value="verification" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3.5 py-2">
                 2. Pharmacist Audit
               </TabsTrigger>
-              <TabsTrigger value="dispatch" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-semibold text-xs md:text-sm">
+              <TabsTrigger value="dispatch" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3.5 py-2">
                 3. Pharmacy Sourcing
               </TabsTrigger>
-              <TabsTrigger value="delivery" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-semibold text-xs md:text-sm">
+              <TabsTrigger value="delivery" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3.5 py-2">
                 4. Cold-Chain Delivery
               </TabsTrigger>
-              <TabsTrigger value="reminders" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-semibold text-xs md:text-sm">
+              <TabsTrigger value="reminders" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3.5 py-2">
                 5. Pill Vault & Safety
               </TabsTrigger>
-              <TabsTrigger value="revenue" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-semibold text-xs md:text-sm">
+              <TabsTrigger value="revenue" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3.5 py-2">
                 6. Unit Economics
               </TabsTrigger>
             </TabsList>
@@ -945,6 +945,62 @@ export default function MedicineMVP() {
           </Tabs>
         </div>
       </div>
+
+      {/* Fixed Mobile App Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-3 py-2 flex items-center justify-around shadow-2xl">
+        <button
+          type="button"
+          onClick={() => setActiveTab("ocr")}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${
+            activeTab === "ocr" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <FileText className="w-5 h-5" />
+          <span>Rx Scan</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("verification")}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${
+            activeTab === "verification" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <Building2 className="w-5 h-5" />
+          <span>Audit</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("delivery")}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${
+            activeTab === "delivery" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <Truck className="w-5 h-5" />
+          <span>GPS Track</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("reminders")}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${
+            activeTab === "reminders" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <Pill className="w-5 h-5" />
+          <span>Cabinet</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIsProfileModalOpen(true)}
+          className="flex flex-col items-center gap-0.5 text-[10px] font-extrabold text-slate-500 hover:text-emerald-600 transition-colors"
+        >
+          <UserCheck className="w-5 h-5" />
+          <span>Profile</span>
+        </button>
+      </nav>
 
       {/* User, Rider & Pharmacy Profile Modal */}
       <ProfileModal
