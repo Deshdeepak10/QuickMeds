@@ -1,84 +1,15 @@
 /**
- * GOOGLE MAPS FRONTEND INTEGRATION - ESSENTIAL GUIDE
- *
- * USAGE FROM PARENT COMPONENT:
- * ======
- *
- * const mapRef = useRef<google.maps.Map | null>(null);
- *
- * <MapView
- *   initialCenter={{ lat: 40.7128, lng: -74.0060 }}
- *   initialZoom={15}
- *   onMapReady={(map) => {
- *     mapRef.current = map; // Store to control map from parent anytime, google map itself is in charge of the re-rendering, not react state.
- * </MapView>
- *
- * ======
- * Available Libraries and Core Features:
- * -------------------------------
- * 📍 MARKER (from `marker` library)
- * - Attaches to map using { map, position }
- * new google.maps.marker.AdvancedMarkerElement({
- *   map,
- *   position: { lat: 37.7749, lng: -122.4194 },
- *   title: "San Francisco",
- * });
- *
- * -------------------------------
- * 🏢 PLACES (from `places` library)
- * - Does not attach directly to map; use data with your map manually.
- * const place = new google.maps.places.Place({ id: PLACE_ID });
- * await place.fetchFields({ fields: ["displayName", "location"] });
- * map.setCenter(place.location);
- * new google.maps.marker.AdvancedMarkerElement({ map, position: place.location });
- *
- * -------------------------------
- * 🧭 GEOCODER (from `geocoding` library)
- * - Standalone service; manually apply results to map.
- * const geocoder = new google.maps.Geocoder();
- * geocoder.geocode({ address: "New York" }, (results, status) => {
- *   if (status === "OK" && results[0]) {
- *     map.setCenter(results[0].geometry.location);
- *     new google.maps.marker.AdvancedMarkerElement({
- *       map,
- *       position: results[0].geometry.location,
- *     });
- *   }
- * });
- *
- * -------------------------------
- * 📐 GEOMETRY (from `geometry` library)
- * - Pure utility functions; not attached to map.
- * const dist = google.maps.geometry.spherical.computeDistanceBetween(p1, p2);
- *
- * -------------------------------
- * 🛣️ ROUTES (from `routes` library)
- * - Combines DirectionsService (standalone) + DirectionsRenderer (map-attached)
- * const directionsService = new google.maps.DirectionsService();
- * const directionsRenderer = new google.maps.DirectionsRenderer({ map });
- * directionsService.route(
- *   { origin, destination, travelMode: "DRIVING" },
- *   (res, status) => status === "OK" && directionsRenderer.setDirections(res)
- * );
- *
- * -------------------------------
- * 🌦️ MAP LAYERS (attach directly to map)
- * - new google.maps.TrafficLayer().setMap(map);
- * - new google.maps.TransitLayer().setMap(map);
- * - new google.maps.BicyclingLayer().setMap(map);
- *
- * -------------------------------
- * ✅ SUMMARY
- * - “map-attached” → AdvancedMarkerElement, DirectionsRenderer, Layers.
- * - “standalone” → Geocoder, DirectionsService, DistanceMatrixService, ElevationService.
- * - “data-only” → Place, Geometry utilities.
+ * GOOGLE MAPS FRONTEND INTEGRATION WITH REAL DEVICE GEOLOCATION
  */
 
 /// <reference types="@types/google.maps" />
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePersistFn } from "@/hooks/usePersistFn";
 import { cn } from "@/lib/utils";
+import { MapPin, Navigation, Crosshair, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 declare global {
   interface Window {
@@ -92,64 +23,226 @@ const FORGE_BASE_URL =
   "https://forge.butterfly-effect.dev";
 const MAPS_PROXY_URL = `${FORGE_BASE_URL}/v1/maps/proxy`;
 
-function loadMapScript() {
-  return new Promise(resolve => {
+function loadMapScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.google && window.google.maps) {
+      resolve(true);
+      return;
+    }
+
+    if (!API_KEY) {
+      console.warn("VITE_FRONTEND_FORGE_API_KEY not configured, using embedded Google Map fallback");
+      resolve(false);
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = `${MAPS_PROXY_URL}/maps/api/js?key=${API_KEY}&v=weekly&libraries=marker,places,geocoding,geometry`;
     script.async = true;
     script.crossOrigin = "anonymous";
     script.onload = () => {
-      resolve(null);
-      script.remove(); // Clean up immediately
+      resolve(true);
+      script.remove();
     };
     script.onerror = () => {
-      console.error("Failed to load Google Maps script");
+      console.warn("Failed to load Google Maps JS API script, switching to Google Embed Map");
+      resolve(false);
     };
     document.head.appendChild(script);
   });
 }
 
-interface MapViewProps {
+export interface MapViewProps {
   className?: string;
-  initialCenter?: google.maps.LatLngLiteral;
+  initialCenter?: { lat: number; lng: number };
   initialZoom?: number;
-  onMapReady?: (map: google.maps.Map) => void;
+  origin?: { lat: number; lng: number };
+  destination?: { lat: number; lng: number };
+  riderLocation?: { lat: number; lng: number };
+  showRoute?: boolean;
+  onMapReady?: (map: any) => void;
 }
+
+// Ghaziabad, Uttar Pradesh Default Coordinates
+const DEFAULT_CENTER = { lat: 28.6692, lng: 77.4538 }; // Ghaziabad Center
+const DEFAULT_PICKUP = { lat: 28.6720, lng: 77.4420 }; // Apollo Hub (Raj Nagar / Kavi Nagar, Ghaziabad)
+const DEFAULT_DROP = { lat: 28.6610, lng: 77.4610 };   // Patient Home (Indirapuram, Ghaziabad)
 
 export function MapView({
   className,
-  initialCenter = { lat: 37.7749, lng: -122.4194 },
-  initialZoom = 12,
+  initialCenter = DEFAULT_CENTER,
+  initialZoom = 14,
+  origin = DEFAULT_PICKUP,
+  destination = DEFAULT_DROP,
+  riderLocation = { lat: 28.6670, lng: 77.4500 },
+  showRoute = true,
   onMapReady,
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<google.maps.Map | null>(null);
+  const map = useRef<any>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [useEmbedFallback, setUseEmbedFallback] = useState(false);
+  const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number }>(initialCenter);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationName, setLocationName] = useState<string | null>(null);
 
   const init = usePersistFn(async () => {
-    await loadMapScript();
-    if (!mapContainer.current) {
-      console.error("Map container not found");
-      return;
+    const success = await loadMapScript();
+    if (success && window.google && window.google.maps && mapContainer.current) {
+      try {
+        map.current = new window.google.maps.Map(mapContainer.current, {
+          zoom: initialZoom,
+          center: currentCoords,
+          mapTypeControl: true,
+          fullscreenControl: true,
+          zoomControl: true,
+          streetViewControl: true,
+          mapId: "QUICKMED_MAP_ID",
+        });
+
+        // Add Pharmacy Pickup Marker
+        new window.google.maps.Marker({
+          position: origin,
+          map: map.current,
+          title: "Apollo Pharmacy Pickup Hub",
+          icon: {
+            url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+          },
+        });
+
+        // Add Destination Customer Marker
+        new window.google.maps.Marker({
+          position: destination,
+          map: map.current,
+          title: "Patient Delivery Address",
+          icon: {
+            url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+          },
+        });
+
+        // Add Delivery Rider Marker
+        new window.google.maps.Marker({
+          position: riderLocation,
+          map: map.current,
+          title: "QuickMed Delivery Rider",
+          icon: {
+            url: "https://maps.google.com/mapfiles/ms/icons/motorcycling.png",
+          },
+        });
+
+        // Draw Polyline Route
+        if (showRoute) {
+          const flightPath = new window.google.maps.Polyline({
+            path: [origin, riderLocation, destination],
+            geodesic: true,
+            strokeColor: "#10b981",
+            strokeOpacity: 0.9,
+            strokeWeight: 5,
+          });
+          flightPath.setMap(map.current);
+        }
+
+        setMapLoaded(true);
+        if (onMapReady) {
+          onMapReady(map.current);
+        }
+        return;
+      } catch (err) {
+        console.warn("Error instantiating Google Maps JS API:", err);
+      }
     }
-    map.current = new window.google.maps.Map(mapContainer.current, {
-      zoom: initialZoom,
-      center: initialCenter,
-      mapTypeControl: true,
-      fullscreenControl: true,
-      zoomControl: true,
-      streetViewControl: true,
-      mapId: "DEMO_MAP_ID",
-    });
-    if (onMapReady) {
-      onMapReady(map.current);
-    }
+
+    // Fallback to Google Embedded Map URL
+    setUseEmbedFallback(true);
   });
 
   useEffect(() => {
     init();
   }, [init]);
 
+  // Request Real Device Current Location
+  const handleUseDeviceLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setIsLocating(true);
+    toast.info("📡 Requesting device GPS coordinates...");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const newCoords = { lat: latitude, lng: longitude };
+        setCurrentCoords(newCoords);
+        setLocationName(`Lat: ${latitude.toFixed(4)}, Lng: ${longitude.toFixed(4)}`);
+        setIsLocating(false);
+
+        if (map.current && window.google && window.google.maps) {
+          map.current.setCenter(newCoords);
+          map.current.setZoom(16);
+
+          // Place Device Location Marker
+          new window.google.maps.Marker({
+            position: newCoords,
+            map: map.current,
+            title: "Your Device Current Location",
+            icon: {
+              url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+            },
+          });
+        }
+
+        toast.success(`📍 Device GPS Location Acquired! (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+      },
+      (error) => {
+        setIsLocating(false);
+        console.warn("Geolocation error:", error);
+        toast.error(`Unable to retrieve location: ${error.message}. Defaulting to Indiranagar, Bangalore.`);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  const embedUrl = `https://maps.google.com/maps?q=${currentCoords.lat},${currentCoords.lng}&z=${initialZoom}&output=embed`;
+
   return (
-    <div ref={mapContainer} className={cn("w-full h-[500px]", className)} />
+    <div className={cn("w-full h-[380px] bg-slate-900 relative rounded-2xl overflow-hidden border border-slate-800", className)}>
+      {useEmbedFallback ? (
+        <div className="w-full h-full relative">
+          <iframe
+            title="Google Maps Location View"
+            src={embedUrl}
+            className="w-full h-full border-0 filter saturate-150 contrast-125"
+            loading="lazy"
+            allowFullScreen
+          />
+        </div>
+      ) : (
+        <div ref={mapContainer} className="w-full h-full" />
+      )}
+
+      {/* Top Map HUD Bar with Geolocation Button */}
+      <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+        <div className="bg-slate-950/90 border border-slate-800 text-white text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-lg backdrop-blur-md pointer-events-auto">
+          <Navigation className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+          <span>{locationName ? `📍 ${locationName}` : "Google Live GPS Map"}</span>
+        </div>
+
+        <Button
+          size="sm"
+          onClick={handleUseDeviceLocation}
+          disabled={isLocating}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-8 px-3 rounded-xl shadow-lg backdrop-blur-md pointer-events-auto flex items-center gap-1.5"
+        >
+          {isLocating ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Crosshair className="w-3.5 h-3.5 text-emerald-200" />
+          )}
+          {isLocating ? "Locating..." : "Use Device Location"}
+        </Button>
+      </div>
+    </div>
   );
 }

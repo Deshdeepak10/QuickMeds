@@ -41,19 +41,19 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
     phone: "+91 98765 43210",
     badge: "Patient #P-8821",
     avatar: "👩‍💼",
-    location: "Indiranagar, Bangalore"
+    location: "Raj Nagar Extension, Ghaziabad"
   },
   pharmacy: {
     id: "u-pharmacy-202",
-    name: "Apollo Express Pharmacy",
+    name: "Apollo Express Pharmacy (Ghaziabad)",
     role: "pharmacy",
-    email: "hub.indiranagar@apollopharmacy.in",
+    email: "hub.ghaziabad@apollopharmacy.in",
     phone: "+91 98765 11223",
-    badge: "Licensed Hub #KA-2021-00921",
+    badge: "Licensed Hub #UP-2021-00921",
     avatar: "🏥",
-    licenseNo: "KA-2021-00921",
-    shopName: "Apollo Express Hub (Indiranagar)",
-    location: "Indiranagar 100ft Rd"
+    licenseNo: "UP-2021-00921",
+    shopName: "Apollo Express Hub (Raj Nagar, Ghaziabad)",
+    location: "Kavi Nagar Main Rd, Ghaziabad"
   },
   rider: {
     id: "u-rider-303",
@@ -63,7 +63,7 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
     phone: "+91 98765 99887",
     badge: "Express Courier #R-4402",
     avatar: "🏍️",
-    location: "Indiranagar Zone 4",
+    location: "Ghaziabad Central Zone",
     vehicleType: "EV Scooter (Cold Storage Box)"
   }
 };
@@ -101,12 +101,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     {
       id: "p1",
       ownerName: "Pharm. Priya Nair",
-      shopName: "Apollo Pharmacy - Express Hub (Indiranagar)",
-      licenseNo: "KA-2021-00921",
+      shopName: "Apollo Pharmacy - Express Hub (Raj Nagar, Ghaziabad)",
+      licenseNo: "UP-2021-00921",
       category: "Cold-Chain Certified Retail",
-      address: "Indiranagar 100ft Rd, Bangalore",
+      address: "Kavi Nagar Main Rd, Ghaziabad",
       phone: "+91 98765 43210",
-      email: "hub.indiranagar@apollopharmacy.in",
+      email: "hub.ghaziabad@apollopharmacy.in",
       distance: "0.8 km",
       rating: "4.9 ★",
       coldChainReady: true,
@@ -116,12 +116,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     {
       id: "p2",
       ownerName: "Pharm. Suresh Kumar",
-      shopName: "MedPlus Superstore (Koramangala)",
-      licenseNo: "KA-2019-04120",
+      shopName: "MedPlus Superstore (Indirapuram, Ghaziabad)",
+      licenseNo: "UP-2019-04120",
       category: "Retail Pharmacy Hub",
-      address: "Koramangala 8th Block, Bangalore",
+      address: "Shipra Sun City, Indirapuram, Ghaziabad",
       phone: "+91 98765 12345",
-      email: "koramangala@medplus.in",
+      email: "indirapuram@medplus.in",
       distance: "1.6 km",
       rating: "4.7 ★",
       coldChainReady: true,

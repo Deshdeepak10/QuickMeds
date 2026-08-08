@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { Building2, ShieldCheck, CheckCircle2, FileCheck2, Sparkles, Upload, MapPin, Phone, Mail, User } from "lucide-react";
 import { toast } from "sonner";
+import { PharmacyRegisterSchema } from "@shared/schemas";
 
 export function PharmacyRegisterModal() {
   const [, setLocation] = useLocation();
@@ -42,12 +43,7 @@ export function PharmacyRegisterModal() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!ownerName || !shopName || !licenseNo || !address || !phone || !email) {
-      toast.error("Please fill in all required pharmacy registration details");
-      return;
-    }
-
-    registerPharmacyStore({
+    const result = PharmacyRegisterSchema.safeParse({
       ownerName,
       shopName,
       licenseNo,
@@ -58,7 +54,14 @@ export function PharmacyRegisterModal() {
       coldChainReady
     });
 
-    toast.success(`🎉 ${shopName} successfully registered & verified on QuickMed!`);
+    if (!result.success) {
+      toast.error(result.error.issues[0]?.message || "Invalid pharmacy registration details");
+      return;
+    }
+
+    registerPharmacyStore(result.data);
+
+    toast.success(`🎉 ${result.data.shopName} successfully registered & verified on QuickMed!`);
     setLocation("/app");
   };
 

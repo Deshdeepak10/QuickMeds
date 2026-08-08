@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import RevenueCalculator from "@/components/RevenueCalculator";
 import { LiveTrackingMap } from "@/components/LiveTrackingMap";
+import { ProfileModal } from "@/components/ProfileModal";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface PrescribedMed {
@@ -153,6 +154,7 @@ export default function MedicineMVP() {
   const [, setLocation] = useLocation();
   const { user, setIsAuthModalOpen, registeredPharmacies, setIsPharmacyRegisterModalOpen, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("ocr");
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Switch default tab based on logged in role
   useEffect(() => {
@@ -281,6 +283,14 @@ export default function MedicineMVP() {
               </div>
             </div>
 
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 font-bold text-xs px-3 py-1.5 flex items-center gap-1.5"
+              onClick={() => setIsProfileModalOpen(true)}
+            >
+              <UserCheck className="w-3.5 h-3.5" /> My Profile
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -935,6 +945,12 @@ export default function MedicineMVP() {
           </Tabs>
         </div>
       </div>
+
+      {/* User, Rider & Pharmacy Profile Modal */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </div>
   );
 }

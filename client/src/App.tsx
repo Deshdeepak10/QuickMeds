@@ -18,15 +18,15 @@ import Resources from "./pages/Resources";
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={LoginHome} />
-      <Route path={"/login"} component={LoginHome} />
-      <Route path={"/app"}>
-        {() => <ProtectedRoute component={MedicineMVP} />}
+      <Route path="/" component={LoginHome} />
+      <Route path="/login" component={LoginHome} />
+      <Route path="/app">
+        <ProtectedRoute component={MedicineMVP} />
       </Route>
-      <Route path={"/medicine-mvp"}>
-        {() => <ProtectedRoute component={MedicineMVP} />}
+      <Route path="/medicine-mvp">
+        <ProtectedRoute component={MedicineMVP} />
       </Route>
-      <Route path={"/404"} component={NotFound} />
+      <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={LoginHome} />
     </Switch>

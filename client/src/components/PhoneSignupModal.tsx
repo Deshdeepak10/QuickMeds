@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { Phone, User, Bike, ShieldCheck, ArrowRight, KeyRound, CheckCircle2, Sparkles, MapPin, Mail, Smartphone } from "lucide-react";
 import { toast } from "sonner";
+import { PhoneSignupSchema, VerifyOtpSchema } from "@shared/schemas";
 
 export function PhoneSignupModal() {
   const [, setLocation] = useLocation();
@@ -28,12 +29,18 @@ export function PhoneSignupModal() {
 
   const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phone) {
-      toast.error("Please enter your name and phone number");
-      return;
-    }
-    if (phone.length < 10) {
-      toast.error("Please enter a valid 10-digit mobile phone number");
+    const result = PhoneSignupSchema.safeParse({
+      name,
+      phone,
+      role: phoneSignupRole,
+      email: email || undefined,
+      locationPin,
+      vehicleType: phoneSignupRole === "rider" ? vehicleType : undefined,
+      drivingLicense: phoneSignupRole === "rider" ? drivingLicense : undefined,
+    });
+
+    if (!result.success) {
+      toast.error(result.error.issues[0]?.message || "Invalid sign up details provided");
       return;
     }
 
@@ -41,13 +48,23 @@ export function PhoneSignupModal() {
     setTimeout(() => {
       setIsSendingOtp(false);
       setStep("otp");
-      toast.info(`📱 SMS OTP sent to +91 ${phone}! Enter OTP: 7392`);
+      toast.info(`📱 SMS OTP sent to +91 ${result.data.phone}! Enter OTP: 7392`);
     }, 1000);
   };
 
   const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (enteredOtp === generatedOtp || enteredOtp === "1234") {
+    const otpResult = VerifyOtpSchema.safeParse({
+      phone,
+      enteredOtp,
+    });
+
+    if (!otpResult.success) {
+      toast.error(otpResult.error.issues[0]?.message || "Invalid OTP format");
+      return;
+    }
+
+    if (otpResult.data.enteredOtp === generatedOtp || otpResult.data.enteredOtp === "1234") {
       registerUserWithPhone({
         name,
         phone,
