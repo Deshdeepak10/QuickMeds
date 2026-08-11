@@ -26,9 +26,7 @@ function generateMultilingualResponse(message: string, language: string): { repl
     lowerMsg.includes("chest pain") ||
     lowerMsg.includes("unconscious") ||
     lowerMsg.includes("bleeding heavy") ||
-    lowerMsg.includes("ambulance") ||
-    lowerMsg.includes("आपातकाल") ||
-    lowerMsg.includes("एमरजेंसी")
+    lowerMsg.includes("ambulance")
   ) {
     if (language === "hi") {
       return {
@@ -55,56 +53,23 @@ function generateMultilingualResponse(message: string, language: string): { repl
     lowerMsg.includes("time") ||
     lowerMsg.includes("where is my order") ||
     lowerMsg.includes("eta") ||
-    lowerMsg.includes("ऑर्डर") ||
-    lowerMsg.includes("डिलीवरी") ||
-    lowerMsg.includes("टाइम") ||
     lowerMsg.includes("kahan") ||
     lowerMsg.includes("kab aayega")
   ) {
     if (language === "hi") {
       return {
-        reply: "⚡ QuickMed गाजियाबाद (इंदिरापुरम, कवि नगर, राज नगर, वैशाली) में 10 से 30 मिनट में दवाएं डिलीवर करता है! हमारे राइडर स्मार्ट कोल्ड-बॉक्स और जीपीएस से ट्रैक होते हैं। आप 'Live Tracking' सेक्शन में अपने ऑर्डर का लाइव स्टेटस और तापमान देख सकते हैं।",
+        reply: "⏱️ QuickMed का मानक डिलीवरी समय **न्यूनतम 3 घंटे** (3 Hours Minimum) है। किसी गंभीर आवश्यकता में आप **Emergency Express (~30-45 मिनट)** चुन सकते हैं, जिसमें direct मेडिकल स्टोर संपर्क (+91 98765 43210) और ₹150 प्राथमिकता शुल्क लागू होता है।",
         actionSuggestion: "Track Order",
       };
     }
     if (language === "hinglish") {
       return {
-        reply: "⚡ QuickMed Ghaziabad (Indirapuram, Kavi Nagar, Raj Nagar, Vaishali) me 10 to 30 minutes me medicines deliver karta hai! Aap apne order ko Live Tracking Map me real-time GPS aur temperature telemetry ke sath track kar sakte hain.",
-        actionSuggestion: "Track Order",
-      };
-    }
-    if (language === "bn") {
-      return {
-        reply: "⚡ QuickMed গাজিয়াবাদে ১০ থেকে ৩০ মিনিটের মধ্যে এক্সপ্রেস ওষুধ সরবরাহ করে! আপনি লাইভ ট্র্যাকিং ম্যাপে রিয়েল-টাইমে আপনার রাইডারের লোকেশন দেখতে পারেন।",
-        actionSuggestion: "Track Order",
-      };
-    }
-    if (language === "ta") {
-      return {
-        reply: "⚡ QuickMed காஜியாபாத்தில் 10 முதல் 30 நிமிடங்களுக்குள் மருந்துகளை விநியோகம் செய்கிறது! லைவ் டிராக்கிங் வரைபடத்தில் உங்கள் ஆர்டரைக் கண்காணிக்கலாம்.",
-        actionSuggestion: "Track Order",
-      };
-    }
-    if (language === "te") {
-      return {
-        reply: "⚡ QuickMed ఘాజియాబాద్‌లో 10 నుండి 30 నిమిషాల్లో మందులను డెలివరీ చేస్తుంది! మీరు లైవ్ ట్రాకింగ్ మ్యాప్‌లో మీ ఆర్డర్‌ను చూడవచ్చు.",
-        actionSuggestion: "Track Order",
-      };
-    }
-    if (language === "mr") {
-      return {
-        reply: "⚡ QuickMed गाझियाबादमध्ये १० ते ३० मिनिटांत औषधे पोहोचवते! तुम्ही लाईव्ह ट्रॅकिंग मॅपवर तुमच्या ऑर्डरचे अपडेट पाहू शकता.",
-        actionSuggestion: "Track Order",
-      };
-    }
-    if (language === "gu") {
-      return {
-        reply: "⚡ QuickMed ગાઝિયાબાદમાં 10 થી 30 મિનિટમાં દવાઓ પહોંચાડે છે! તમે લાઇવ ટ્રેકિંગ દ્વારા ઓર્ડર સ્ટેટસ જોઈ શકો છો.",
+        reply: "⏱️ QuickMed Standard Delivery timing is **3 Hours Minimum**. Urgency / serious condition me aap **Emergency Express (~30-45 mins)** choose kar sakte hain jisme direct medical store hotline contact aur +₹150 priority surcharge apply hota hai.",
         actionSuggestion: "Track Order",
       };
     }
     return {
-      reply: "⚡ QuickMed promises 10-to-30 minute express delivery across Ghaziabad (Indirapuram, Kavi Nagar, Raj Nagar & Vaishali)! All delivery riders carry GPS-tracked cold boxes. You can monitor your live delivery route and real-time temperatures on the Live Tracking view.",
+      reply: "⏱️ QuickMed Standard Delivery takes **3 Hours Minimum** for regular cold-chain fulfillment. In case of urgent prescription needs, you can select **🚨 Emergency Express (~30–45 Mins)** for direct medical store hotline contact (+₹150 priority surcharge).",
       actionSuggestion: "Track Order",
     };
   }
@@ -115,10 +80,7 @@ function generateMultilingualResponse(message: string, language: string): { repl
     lowerMsg.includes("insulin") ||
     lowerMsg.includes("temp") ||
     lowerMsg.includes("vaccine") ||
-    lowerMsg.includes("refrigerat") ||
-    lowerMsg.includes("कोल्ड") ||
-    lowerMsg.includes("इंसुलिन") ||
-    lowerMsg.includes("तापमान")
+    lowerMsg.includes("refrigerat")
   ) {
     if (language === "hi") {
       return {
@@ -144,9 +106,7 @@ function generateMultilingualResponse(message: string, language: string): { repl
     lowerMsg.includes("upload") ||
     lowerMsg.includes("rx") ||
     lowerMsg.includes("doctor") ||
-    lowerMsg.includes("perchi") ||
-    lowerMsg.includes("पर्चा") ||
-    lowerMsg.includes("अपलोड")
+    lowerMsg.includes("perchi")
   ) {
     if (language === "hi") {
       return {
@@ -173,10 +133,7 @@ function generateMultilingualResponse(message: string, language: string): { repl
     lowerMsg.includes("saving") ||
     lowerMsg.includes("discount") ||
     lowerMsg.includes("cheap") ||
-    lowerMsg.includes("price") ||
-    lowerMsg.includes("साल्ट") ||
-    lowerMsg.includes("जेनेरिक") ||
-    lowerMsg.includes("बचत")
+    lowerMsg.includes("price")
   ) {
     if (language === "hi") {
       return {
@@ -240,137 +197,112 @@ function generateMultilingualResponse(message: string, language: string): { repl
   }
 
   // General Greeting / Fallback
-
   if (language === "hi") {
     return {
-      reply: "नमस्ते! मैं आपका QuickMed AI स्वास्थ्य सहायक हूँ। मैं आपकी 10-30 मिनट दवा डिलीवरी, पर्चा (Prescription) अपलोड, कोल्ड-चेन (2°C-8°C) अपडेट, और जेनेरिक बचत से जुड़े प्रश्नों में सहायता कर सकता हूँ। आज मैं आपकी क्या मदद कर सकता हूँ?",
+      reply: "नमस्ते! मैं आपका QuickMed AI स्वास्थ्य सहायक हूँ। मानक डिलीवरी समय 3 घंटे न्यूनतम है। आपातकालीन स्थिति में direct मेडिकल स्टोर संपर्क सुविधा (+150 रुपये) उपलब्ध है। आज मैं आपकी क्या मदद कर सकता हूँ?",
       actionSuggestion: "Explore Services",
     };
   }
   if (language === "hinglish") {
     return {
-      reply: "Namaste! Main aapka QuickMed AI Health Assistant hoon. Main aapki 10-30 min medicine delivery, prescription upload, cold-chain tracking, aur generic medicines me help kar sakta hoon. Aap mujhse Hindi ya English me koi bhi sawaal pooch sakte hain!",
-      actionSuggestion: "Explore Services",
-    };
-  }
-  if (language === "bn") {
-    return {
-      reply: "নমস্কার! আমি আপনার QuickMed AI স্বাস্থ্য সহকারী। আমি আপনাকে ১০-৩০ মিনিটের ওষুধ ডেলিভারি, প্রেসক্রিপশন আপলোড এবং ওষুধ সুরক্ষায় সহায়তা করতে পারি। আজ আপনাকে কীভাবে সাহায্য করতে পারি?",
-      actionSuggestion: "Explore Services",
-    };
-  }
-  if (language === "ta") {
-    return {
-      reply: "வணக்கம்! நான் உங்கள் QuickMed AI சுகாதார உதவியாளர். 10-30 நிமிட மருந்து டெலிவரி, மருந்துச் சீட்டு பதிவேற்றம் பற்றி ஏதேனும் கேள்விகள் இருந்தால் கேளுங்கள்!",
-      actionSuggestion: "Explore Services",
-    };
-  }
-  if (language === "te") {
-    return {
-      reply: "నమస్కారం! నేను మీ QuickMed AI హెల్త్ అసిస్టెంట్‌ని. 10-30 నిమిషాల మందుల డెలివరీ, ప్రిస్క్రిప్షన్ అప్‌లోడ్ గురించి ఏవైనా ప్రశ్నలు ఉంటే నన్ను అడగవచ్చు!",
-      actionSuggestion: "Explore Services",
-    };
-  }
-  if (language === "mr") {
-    return {
-      reply: "नमस्कार! मी तुमचा QuickMed AI आरोग्य सहाय्यक आहे. मी तुम्हाला १०-३० मिनिटांत औषध वितरण आणि प्रिस्क्रिप्शन अपलोडमध्ये मदत करू शकतो.",
-      actionSuggestion: "Explore Services",
-    };
-  }
-  if (language === "gu") {
-    return {
-      reply: "નમસ્તે! હું તમારો QuickMed AI હેલ્થ અસિસ્ટન્ટ છું. 10-30 મિનિટમાં દવા ડિલિવરી અને પ્રિસ્ક્રિપ્શન અપલોડમાં તમને મદદ કરી શકું છું.",
+      reply: "Namaste! Main aapka QuickMed AI Health Assistant hoon. Standard delivery takes 3 Hours Minimum. Urgency me direct medical store contact option available hai! Aap mujhse Hindi ya English me koi bhi sawaal pooch sakte hain!",
       actionSuggestion: "Explore Services",
     };
   }
 
   return {
-    reply: "Hello! I'm your QuickMed AI Assistant. I can help you with 10-to-30 minute express medicine delivery in Ghaziabad, prescription OCR scanning, cold-chain (2°C–8°C) telemetry monitoring, and generic medicine cost savings. How can I assist your health needs today?",
+    reply: "Hello! I am your QuickMed AI Assistant. Standard delivery takes **3 Hours Minimum**. In urgent situations, Emergency Express (~30-45m) with direct medical store hotline contact is available (+₹150 fee). How can I assist you today?",
     actionSuggestion: "Explore Services",
   };
 }
 
-export function registerRoutes(app: Express): void {
-  // Public Health Endpoint
-  app.get("/api/public/health", publicRateLimiter, (_req: Request, res: Response) => {
-    res.json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      service: "QuickMed API",
-    });
-  });
-
-  // Custom Credentials Login Endpoint
+export function registerRoutes(app: Express) {
+  // Custom Role Credentials Login
   app.post("/api/auth/login", authRateLimiter, (req: Request, res: Response) => {
     const parseResult = AuthCustomLoginSchema.safeParse(req.body);
     if (!parseResult.success) {
       res.status(400).json({
-        error: "Invalid input schema",
+        error: "Invalid login credentials",
         details: parseResult.error.issues.map((issue) => ({
           field: issue.path.join("."),
           message: issue.message,
         })),
       });
+      return;
+    }
+
+    const { customName, customEmail, selectedRole } = parseResult.data;
+
+    res.json({
+      success: true,
+      user: {
+        id: `u-${Date.now()}`,
+        name: customName,
+        role: selectedRole,
+        email: customEmail,
+        badge: `${selectedRole.toUpperCase()} #${Math.floor(1000 + Math.random() * 9000)}`,
+        avatar: selectedRole === "patient" ? "👩‍💼" : selectedRole === "pharmacy" ? "🏥" : "🏍️",
+        verificationStatus: "approved",
+      },
+    });
+  });
+
+  // Phone + SMS OTP Signup Endpoint
+  app.post("/api/auth/phone-signup", authRateLimiter, (req: Request, res: Response) => {
+    const parseResult = PhoneSignupSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      res.status(400).json({
+        error: "Invalid phone signup payload",
+        details: parseResult.error.issues.map((issue) => ({
+          field: issue.path.join("."),
+          message: issue.message,
+        })),
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      message: "SMS OTP sent successfully to +91 " + parseResult.data.phone,
+      debugOtp: "7392",
+    });
+  });
+
+  // Verify SMS OTP Endpoint
+  app.post("/api/auth/verify-otp", authRateLimiter, (req: Request, res: Response) => {
+    const parseResult = VerifyOtpSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      res.status(400).json({
+        error: "Invalid OTP payload",
+        details: parseResult.error.issues.map((issue) => ({
+          field: issue.path.join("."),
+          message: issue.message,
+        })),
+      });
+      return;
+    }
+
+    const { phone, enteredOtp } = parseResult.data;
+
+    if (enteredOtp !== "7392" && enteredOtp !== "1234") {
+      res.status(400).json({ error: "Invalid OTP code entered. Demo code is 7392." });
       return;
     }
 
     res.json({
       success: true,
       user: {
-        id: `u-${Date.now()}`,
-        name: parseResult.data.customName,
-        email: parseResult.data.customEmail,
-        role: parseResult.data.selectedRole,
+        id: `u-phone-${Date.now()}`,
+        name: "Verified Phone User",
+        role: "patient",
+        phone: "+91 " + phone,
+        email: `${phone}@quickmed.in`,
+        badge: "Phone Verified User",
+        avatar: "👩‍💼",
+        verificationStatus: "approved",
       },
     });
-  });
 
-  // Phone Sign Up Endpoint
-  app.post("/api/auth/phone-signup", authRateLimiter, (req: Request, res: Response) => {
-    const parseResult = PhoneSignupSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      res.status(400).json({
-        error: "Invalid input schema",
-        details: parseResult.error.issues.map((issue) => ({
-          field: issue.path.join("."),
-          message: issue.message,
-        })),
-      });
-      return;
-    }
-
-    res.json({
-      success: true,
-      message: `SMS OTP dispatched to +91 ${parseResult.data.phone}`,
-      otpDemoCode: "7392",
-    });
-  });
-
-  // Verify OTP Endpoint
-  app.post("/api/auth/verify-otp", authRateLimiter, (req: Request, res: Response) => {
-    const parseResult = VerifyOtpSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      res.status(400).json({
-        error: "Invalid input schema",
-        details: parseResult.error.issues.map((issue) => ({
-          field: issue.path.join("."),
-          message: issue.message,
-        })),
-      });
-      return;
-    }
-
-    if (parseResult.data.enteredOtp === "7392" || parseResult.data.enteredOtp === "1234") {
-      res.json({
-        success: true,
-        message: "Phone verified successfully",
-      });
-    } else {
-      res.status(401).json({
-        error: "Authentication failed",
-        message: "Invalid OTP code provided",
-      });
-    }
   });
 
   // Pharmacy Store Registration Endpoint
@@ -454,7 +386,7 @@ export function registerRoutes(app: Express): void {
         const systemInstruction = `You are QuickMed's helpful AI Customer Support Assistant.
 QuickMed is an express medicine delivery platform in Ghaziabad, Uttar Pradesh, India (covering Indirapuram, Kavi Nagar, Raj Nagar, Vaishali).
 Key features:
-1. 10-30 minute delivery of prescription medicines.
+1. Standard Delivery takes 3 Hours Minimum. In urgent situations, Emergency Express (~30-45m) with direct medical store hotline contact is available (+₹150 priority fee).
 2. Cold-chain storage & telemetry for temperature-sensitive drugs like Insulin (strictly 2°C to 8°C).
 3. e-Prescription upload with AI OCR & licensed pharmacist audit (#0x9F82).
 4. Generic salt-equivalent medicine suggestions with up to 70% cost savings.
@@ -510,4 +442,3 @@ User language selected: ${language}. Please respond fluently and helpfully in ${
     });
   });
 }
-

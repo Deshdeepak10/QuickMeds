@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
 [![Vercel Deployed](https://img.shields.io/badge/Vercel-Deployed-black.svg)](https://vercel.com/)
 
-**QuickMed** is a state-of-the-art, hyperlocal 10-to-30 minute medicine delivery platform blueprint built for CDSCO-compliant pharmaceutical fulfillment, cold-chain temperature telemetry monitoring (2°C–8°C), and multi-role operations across Patients, Licensed Pharmacy Partners, and Express Delivery Riders.
+**QuickMed** is a state-of-the-art hyperlocal medicine delivery platform blueprint built for CDSCO-compliant pharmaceutical fulfillment, cold-chain temperature telemetry monitoring (2°C–8°C), 3 Hours Minimum Standard Delivery, Emergency Express Direct Store Hotline dispatch, and multi-role operations across Patients, Licensed Pharmacy Partners, Delivery Riders, and App Owners.
 
 ---
 
@@ -14,8 +14,10 @@
 
 ### 👩‍💼 Patient & Healthcare Consumer Portal
 - **AI OCR e-Prescription Scanner**: Instant optical character recognition for paper/digital prescriptions with salt-level generic alternative suggestions.
+- **3-Hour Standard & Emergency Express Delivery**: Flexible 3 Hours Minimum Standard Delivery + 🚨 Emergency Express (~30–45 Mins) with direct medical store hotline contact (+₹150 priority surcharge).
 - **Daily Dosage Cabinet & Medication Alarm**: Log pending doses, record daily compliance, and manage active prescriptions.
-- **Live Order & Temperature Tracking**: Monitor express delivery ETA, real-time rider GPS position, and cold-storage box temperatures.
+- **Live Order & Temperature Tracking**: Monitor delivery ETA, real-time rider GPS position, and cold-storage box temperatures.
+
 - **Device GPS Location Acquisition**: One-click HTML5 geolocation to auto-detect device coordinates in Ghaziabad and surrounding regions.
 
 ### 🏥 Licensed Pharmacy Partner Portal

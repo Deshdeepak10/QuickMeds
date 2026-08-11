@@ -165,7 +165,8 @@ const PHARMACIES = [
     rating: "4.9 ★",
     coldChainReady: true,
     stockMatched: 100,
-    etaMinutes: 18,
+    etaMinutes: 180,
+    phone: "+91 98765 43210",
     pharmacistOnDuty: "Pharm. Priya Nair (Lic #KA-2021-00921)"
   },
   {
@@ -175,7 +176,8 @@ const PHARMACIES = [
     rating: "4.7 ★",
     coldChainReady: true,
     stockMatched: 100,
-    etaMinutes: 25,
+    etaMinutes: 180,
+    phone: "+91 98765 12345",
     pharmacistOnDuty: "Pharm. Suresh Kumar (Lic #KA-2019-04120)"
   },
   {
@@ -185,10 +187,12 @@ const PHARMACIES = [
     rating: "4.8 ★",
     coldChainReady: false,
     stockMatched: 80,
-    etaMinutes: 32,
+    etaMinutes: 180,
+    phone: "+91 98765 88990",
     pharmacistOnDuty: "Pharm. Ananya Rao (Lic #KA-2022-08819)"
   }
 ];
+
 
 export default function MedicineMVP() {
   const [, setLocation] = useLocation();
@@ -357,12 +361,17 @@ export default function MedicineMVP() {
   // Pharmacy Selection State
   const [selectedPharmacy, setSelectedPharmacy] = useState(PHARMACIES[0]);
 
+  // Delivery Speed & Direct Emergency Contact State
+  const [isEmergencyExpress, setIsEmergencyExpress] = useState(false);
+  const [isStoreEmergencyModalOpen, setIsStoreEmergencyModalOpen] = useState(false);
+
   // Delivery Tracking State
   const [orderStage, setOrderStage] = useState<number>(1);
   const [riderProgress, setRiderProgress] = useState(25);
   const [coldTemp, setColdTemp] = useState(3.8);
   const [enteredOtp, setEnteredOtp] = useState("");
   const [isDelivered, setIsDelivered] = useState(false);
+
 
   // Pill Reminder Checklist
   const [takenMeds, setTakenMeds] = useState<Record<string, boolean>>({});
@@ -1075,8 +1084,10 @@ export default function MedicineMVP() {
                             coldChainReady: pharmacy.coldChainReady,
                             stockMatched: pharmacy.stockMatched,
                             etaMinutes: pharmacy.etaMinutes,
+                            phone: pharmacy.phone || "+91 98765 43210",
                             pharmacistOnDuty: pharmacy.ownerName + ` (Lic #${pharmacy.licenseNo})`
                           })}
+
                           className={`p-5 rounded-xl border cursor-pointer transition-all ${
                             isSelected
                               ? "border-emerald-500 bg-emerald-50 text-slate-900 shadow-md"
@@ -1151,6 +1162,53 @@ export default function MedicineMVP() {
                       <CardTitle className="text-base text-slate-900">Dispatch Order Summary</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 text-xs">
+                      {/* Delivery Mode Selection */}
+                      <div className="space-y-2 border-b border-slate-200 pb-3">
+                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                          Select Delivery Timing & Speed
+                        </label>
+                        
+                        {/* Option 1: Standard 3 Hours Minimum */}
+                        <div
+                          onClick={() => setIsEmergencyExpress(false)}
+                          className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+                            !isEmergencyExpress
+                              ? "border-emerald-500 bg-emerald-50 text-slate-900 shadow-xs"
+                              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <div>
+                              <span className="font-bold text-xs block">Standard 3-Hour Minimum Delivery</span>
+                              <span className="text-[11px] text-slate-500">Regular cold-chain dispatch (ETA ~180m)</span>
+                            </div>
+                          </div>
+                          <span className="font-bold text-xs text-slate-900">₹35</span>
+                        </div>
+
+                        {/* Option 2: Emergency Express Direct Store Contact */}
+                        <div
+                          onClick={() => setIsEmergencyExpress(true)}
+                          className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+                            isEmergencyExpress
+                              ? "border-rose-500 bg-rose-50/90 text-slate-900 shadow-xs ring-1 ring-rose-400"
+                              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-rose-300"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 animate-pulse" />
+                            <div>
+                              <span className="font-bold text-xs block text-rose-900 flex items-center gap-1">
+                                🚨 Emergency Express (~30–45 Mins)
+                              </span>
+                              <span className="text-[11px] text-rose-700">Direct Store Hotline + Priority Dispatch</span>
+                            </div>
+                          </div>
+                          <span className="font-bold text-xs text-rose-900">+₹150</span>
+                        </div>
+                      </div>
+
                       <div className="space-y-2 border-b border-slate-200 pb-3">
                         <div className="flex justify-between text-slate-600">
                           <span>Medicines Subtotal</span>
@@ -1161,29 +1219,69 @@ export default function MedicineMVP() {
                           <span className="text-emerald-600 font-bold">FREE</span>
                         </div>
                         <div className="flex justify-between text-slate-600">
-                          <span>Hyperlocal Express Courier</span>
+                          <span>Delivery Courier Fee</span>
                           <span>₹35</span>
                         </div>
+                        {isEmergencyExpress && (
+                          <div className="flex justify-between text-rose-700 font-semibold">
+                            <span className="flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3 text-rose-600" /> Emergency Priority Surcharge
+                            </span>
+                            <span>+₹150</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex justify-between text-base font-bold text-slate-900 pt-1">
                         <span>Total Payable</span>
-                        <span className="text-emerald-700">₹{calculateSubtotal() + 35}</span>
+                        <span className={isEmergencyExpress ? "text-rose-700 font-extrabold" : "text-emerald-700"}>
+                          ₹{calculateSubtotal() + 35 + (isEmergencyExpress ? 150 : 0)}
+                        </span>
                       </div>
+
+                      {/* Direct Store Contact Button for Emergency Express */}
+                      {isEmergencyExpress && (
+                        <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2 text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-rose-900 flex items-center gap-1.5">
+                              <PhoneCall className="w-4 h-4 text-rose-600 animate-bounce" /> Direct Store Emergency Contact
+                            </span>
+                            <Badge className="bg-rose-600 text-white text-[10px] uppercase font-extrabold">Emergency Only</Badge>
+                          </div>
+                          <p className="text-slate-700 leading-tight">
+                            Call medical store directly for instant dispatch coordination:
+                          </p>
+                          <a
+                            href={`tel:${selectedPharmacy.phone || "+919876543210"}`}
+                            className="w-full text-center py-2 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
+                          >
+                            <PhoneCall className="w-3.5 h-3.5 text-white" /> Call Medical Store Directly ({selectedPharmacy.phone || "+91 98765 43210"})
+                          </a>
+                        </div>
+                      )}
 
                       <Button
                         size="lg"
-                        className="w-full bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-6 text-base mt-4 shadow-md"
+                        className={`w-full font-bold py-6 text-base mt-4 shadow-md ${
+                          isEmergencyExpress
+                            ? "bg-rose-600 hover:bg-rose-700 text-white"
+                            : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        }`}
                         onClick={() => {
                           setOrderStage(3);
                           setActiveTab("delivery");
-                          toast.success("Order dispatched to " + selectedPharmacy.name);
+                          toast.success(
+                            isEmergencyExpress
+                              ? "🚨 Emergency Priority Order dispatched! Pharmacist notified for immediate express dispatch."
+                              : "Standard 3-hour order dispatched to " + selectedPharmacy.name
+                          );
                         }}
                       >
-                        Confirm Order & Start Live Tracking <Truck className="w-5 h-5 ml-1" />
+                        {isEmergencyExpress ? "Confirm Emergency Express Order 🚨" : "Confirm Standard Order (3-Hour ETA)"} <Truck className="w-5 h-5 ml-1" />
                       </Button>
                     </CardContent>
                   </Card>
+
                 </div>
               </div>
             </TabsContent>
@@ -1290,9 +1388,44 @@ export default function MedicineMVP() {
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* Emergency Direct Medical Store Contact Card */}
+                  <Card className="bg-gradient-to-br from-rose-50 to-amber-50 border-rose-200 text-slate-900 shadow-md">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base text-rose-900 flex items-center gap-2 font-bold">
+                          <PhoneCall className="w-5 h-5 text-rose-600 animate-pulse" /> Direct Emergency Store Hotline
+                        </CardTitle>
+                        <Badge className="bg-rose-600 text-white text-[10px] font-extrabold">EMERGENCY DISPATCH</Badge>
+                      </div>
+                      <CardDescription className="text-slate-600 text-xs mt-1">
+                        In case of urgent prescription issues or critical delays, contact the fulfillment medical store directly.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-xs">
+                      <div className="p-3 bg-white/80 border border-rose-200 rounded-xl space-y-1.5">
+                        <p className="font-bold text-slate-900">{selectedPharmacy.name}</p>
+                        <p className="text-slate-600">On-Duty Pharmacist: <strong className="text-slate-900">{selectedPharmacy.pharmacistOnDuty}</strong></p>
+
+                        <p className="text-slate-600">Store Direct Line: <strong className="text-rose-700 font-mono text-sm">{selectedPharmacy.phone || "+91 98765 43210"}</strong></p>
+                      </div>
+
+                      <a
+                        href={`tel:${selectedPharmacy.phone || "+919876543210"}`}
+                        className="w-full text-center py-3 px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all"
+                      >
+                        <PhoneCall className="w-4 h-4 text-white" /> Call Medical Store Directly
+                      </a>
+
+                      <p className="text-[10px] text-slate-500 text-center italic">
+                        Standard Delivery: 3 Hours Minimum. Emergency Express Hotline is available for urgent medicine dispatch coordination (+₹150 priority surcharge applies for instant courier dispatch).
+                      </p>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </TabsContent>
+
 
             {/* TAB CONTENT 5: PILL REMINDERS & VAULT */}
             <TabsContent value="reminders" className="mt-8 space-y-6">

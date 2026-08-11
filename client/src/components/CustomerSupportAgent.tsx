@@ -108,19 +108,18 @@ const QUICK_PROMPTS: Record<SupportedLanguage, string[]> = {
   ],
 };
 
-
 const ROLE_SPECIFIC_PROMPTS: Record<string, string[]> = {
   patient: [
-    "Track my express delivery order",
+    "Track my standard 3-hour delivery order",
     "How to upload doctor prescription?",
     "Is insulin kept in 2°C-8°C cold chain?",
-    "How much can I save on generic drugs?",
+    "Emergency express direct store contact & surcharge",
   ],
   pharmacy: [
     "How to register my pharmacy shop?",
     "What documents are needed for verification?",
     "Drug license & GSTIN upload rules",
-    "How to manage cold-box stock dispatch?",
+    "Direct store emergency hotline setup",
   ],
   rider: [
     "How to verify delivery OTP with patient?",

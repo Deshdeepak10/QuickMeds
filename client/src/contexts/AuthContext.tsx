@@ -145,7 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       rating: "4.9 ★",
       coldChainReady: true,
       stockMatched: 100,
-      etaMinutes: 18,
+      etaMinutes: 180,
       verificationStatus: "approved"
     },
     {
@@ -161,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       rating: "4.7 ★",
       coldChainReady: true,
       stockMatched: 100,
-      etaMinutes: 25,
+      etaMinutes: 180,
       verificationStatus: "approved"
     }
   ]);
@@ -195,9 +195,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       distance: "0.5 km",
       rating: "5.0 ★",
       stockMatched: 100,
-      etaMinutes: 15,
+      etaMinutes: 180,
       verificationStatus: status
     };
+
 
     setRegisteredPharmacies((prev) => [newStore, ...prev]);
 
