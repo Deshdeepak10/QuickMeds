@@ -23,7 +23,7 @@ import { toast } from "sonner";
 
 export default function LoginHome() {
   const [, setLocation] = useLocation();
-  const { loginAsRole, loginWithCustom, setIsAuthModalOpen, setIsPharmacyRegisterModalOpen, setIsPhoneSignupModalOpen, setPhoneSignupRole } = useAuth();
+  const { loginAsRole, loginWithCustom, setIsAuthModalOpen, setIsOwnerAuthModalOpen, setIsPharmacyRegisterModalOpen, setIsPhoneSignupModalOpen, setPhoneSignupRole } = useAuth();
   
   const [selectedRole, setSelectedRole] = useState<UserRole>("patient");
   const [customName, setCustomName] = useState("");
@@ -69,6 +69,7 @@ export default function LoginHome() {
           </Badge>
         </div>
       </header>
+
 
       {/* Main Content */}
       <main className="py-12 flex-1 flex items-center">
@@ -346,10 +347,20 @@ export default function LoginHome() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-        <div className="container mx-auto px-4">
-          QuickMed Licensed Medicine Delivery Platform • Compliant with Drugs and Cosmetics Act & Telemedicine Guidelines
+        <div className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-2">
+          <span>QuickMed Licensed Medicine Delivery Platform • Compliant with Drugs and Cosmetics Act & Telemedicine Guidelines</span>
+          
+          <button
+            type="button"
+            onClick={() => setIsOwnerAuthModalOpen(true)}
+            className="text-[11px] text-slate-400 hover:text-purple-700 font-mono flex items-center gap-1 transition-colors"
+            title="Restricted Platform Owner Portal Access"
+          >
+            <Lock className="w-3 h-3 text-slate-400" /> Platform Owner Gate
+          </button>
         </div>
       </footer>
+
     </div>
   );
 }

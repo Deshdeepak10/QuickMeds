@@ -91,9 +91,30 @@ export const PharmacyRegisterSchema = z.object({
   licenseNo: z
     .string()
     .trim()
-    .min(5, "License number must be at least 5 characters")
-    .max(30, "License number cannot exceed 30 characters")
+    .min(5, "Drug License number must be at least 5 characters")
+    .max(30, "Drug License number cannot exceed 30 characters")
     .regex(/^[a-zA-Z0-9-]+$/, "License number must contain only letters, digits, and hyphens"),
+  gstNo: z
+    .string()
+    .trim()
+    .min(10, "GSTIN number must be at least 10 characters")
+    .max(20, "GSTIN number cannot exceed 20 characters")
+    .optional()
+    .or(z.literal("")),
+  ownerAadhar: z
+    .string()
+    .trim()
+    .min(12, "Aadhaar number must be at least 12 digits")
+    .max(14, "Aadhaar number cannot exceed 14 characters")
+    .optional()
+    .or(z.literal("")),
+  pharmacistRegNo: z
+    .string()
+    .trim()
+    .min(4, "State Council Registration number must be at least 4 characters")
+    .max(30, "Registration number cannot exceed 30 characters")
+    .optional()
+    .or(z.literal("")),
   category: z
     .string()
     .trim()
@@ -116,6 +137,7 @@ export const PharmacyRegisterSchema = z.object({
     .max(255, "Email cannot exceed 255 characters"),
   coldChainReady: z.boolean(),
 });
+
 
 // Revenue Calculator Schema
 export const RevenueCalculatorSchema = z.object({
@@ -152,9 +174,38 @@ export const PrescriptionUploadSchema = z.object({
     .optional(),
 });
 
+// AI Customer Help Chat Agent Schema
+export const ChatAgentMessageSchema = z.object({
+  message: z
+    .string()
+    .trim()
+    .min(1, "Message cannot be empty")
+    .max(1000, "Message cannot exceed 1000 characters"),
+  language: z.enum(["en", "hi", "hinglish", "bn", "ta", "te", "mr", "gu"]).default("en"),
+  context: z
+    .object({
+      role: z.string().optional(),
+      activeTab: z.string().optional(),
+      orderId: z.string().optional(),
+      location: z.string().optional(),
+    })
+    .optional(),
+  conversationHistory: z
+    .array(
+      z.object({
+        sender: z.enum(["user", "agent"]),
+        text: z.string().max(1000),
+      })
+    )
+    .max(20)
+    .optional(),
+});
+
 export type AuthCustomLoginInput = z.infer<typeof AuthCustomLoginSchema>;
 export type PhoneSignupInput = z.infer<typeof PhoneSignupSchema>;
 export type VerifyOtpInput = z.infer<typeof VerifyOtpSchema>;
 export type PharmacyRegisterInput = z.infer<typeof PharmacyRegisterSchema>;
 export type RevenueCalculatorInput = z.infer<typeof RevenueCalculatorSchema>;
 export type PrescriptionUploadInput = z.infer<typeof PrescriptionUploadSchema>;
+export type ChatAgentMessageInput = z.infer<typeof ChatAgentMessageSchema>;
+

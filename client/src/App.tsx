@@ -6,14 +6,14 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { AuthModal } from "./components/AuthModal";
+import { OwnerSecurityAuthModal } from "./components/OwnerSecurityAuthModal";
 import { PharmacyRegisterModal } from "./components/PharmacyRegisterModal";
 import { PhoneSignupModal } from "./components/PhoneSignupModal";
+import { CustomerSupportAgent } from "./components/CustomerSupportAgent";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import MedicineDelivery from "./pages/MedicineDelivery";
 import MedicineMVP from "./pages/MedicineMVP";
 import LoginHome from "./pages/LoginHome";
-import QuickLaunch from "./pages/QuickLaunch";
-import Resources from "./pages/Resources";
+
 
 function Router() {
   return (
@@ -41,8 +41,10 @@ function App() {
           <TooltipProvider>
             <Toaster />
             <AuthModal />
+            <OwnerSecurityAuthModal />
             <PharmacyRegisterModal />
             <PhoneSignupModal />
+            <CustomerSupportAgent />
             <Router />
           </TooltipProvider>
         </AuthProvider>
@@ -51,4 +53,6 @@ function App() {
   );
 }
 
+
 export default App;
+

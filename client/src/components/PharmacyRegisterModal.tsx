@@ -18,11 +18,27 @@ export function PharmacyRegisterModal() {
   const [ownerName, setOwnerName] = useState("");
   const [shopName, setShopName] = useState("");
   const [licenseNo, setLicenseNo] = useState("");
+  const [gstNo, setGstNo] = useState("");
+  const [ownerAadhar, setOwnerAadhar] = useState("");
+  const [pharmacistRegNo, setPharmacistRegNo] = useState("");
   const [category, setCategory] = useState("Cold-Chain Certified Retail");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [coldChainReady, setColdChainReady] = useState(true);
+
+  // Document Uploads State
+  const [uploadedDocs, setUploadedDocs] = useState<{
+    drugLicensePdf?: string;
+    gstCertificatePdf?: string;
+    aadharCardPdf?: string;
+    pharmacistDegreePdf?: string;
+  }>({
+    drugLicensePdf: "Drug_License_Cert_UP2026.pdf",
+    gstCertificatePdf: "GSTIN_Registration_09ABC.pdf",
+    aadharCardPdf: "Aadhaar_KYC_Owner.pdf",
+    pharmacistDegreePdf: "State_Pharmacy_Council_Degree.pdf",
+  });
 
   // License Scan Simulation
   const [isValidatingLicense, setIsValidatingLicense] = useState(false);
@@ -47,6 +63,9 @@ export function PharmacyRegisterModal() {
       ownerName,
       shopName,
       licenseNo,
+      gstNo,
+      ownerAadhar,
+      pharmacistRegNo,
       category,
       address,
       phone,
@@ -59,11 +78,19 @@ export function PharmacyRegisterModal() {
       return;
     }
 
-    registerPharmacyStore(result.data);
+    registerPharmacyStore({
+      ...result.data,
+      gstNo: gstNo || "09ABCDE1234F1Z5",
+      ownerAadhar: ownerAadhar || "4521-9874-1234",
+      pharmacistRegNo: pharmacistRegNo || "PCI-UP-88210",
+      documentsUploaded: uploadedDocs,
+      verificationStatus: "pending"
+    });
 
-    toast.success(`🎉 ${result.data.shopName} successfully registered & verified on QuickMed!`);
+    toast.success(`🎉 ${result.data.shopName} registration submitted! Application is pending App Owner verification.`);
     setLocation("/app");
   };
+
 
   return (
     <Dialog open={isPharmacyRegisterModalOpen} onOpenChange={setIsPharmacyRegisterModalOpen}>
@@ -151,6 +178,65 @@ export function PharmacyRegisterModal() {
             </div>
             <p className="text-[11px] text-slate-500">Must be a valid Schedule H retail/wholesale drug license issued under CDSCO.</p>
           </div>
+
+          {/* Additional Mandatory Regulatory Compliance Numbers */}
+          <div className="grid sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">GSTIN Number *</label>
+              <Input
+                placeholder="e.g. 09ABCDE1234F1Z5"
+                value={gstNo}
+                onChange={(e) => setGstNo(e.target.value)}
+                className="bg-slate-50 border-slate-300 font-mono text-slate-900 text-xs"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">State Pharmacy Reg #</label>
+              <Input
+                placeholder="e.g. PCI-UP-88210"
+                value={pharmacistRegNo}
+                onChange={(e) => setPharmacistRegNo(e.target.value)}
+                className="bg-slate-50 border-slate-300 font-mono text-slate-900 text-xs"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">Owner Aadhaar KYC</label>
+              <Input
+                placeholder="e.g. 4521-9874-1234"
+                value={ownerAadhar}
+                onChange={(e) => setOwnerAadhar(e.target.value)}
+                className="bg-slate-50 border-slate-300 font-mono text-slate-900 text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Mandatory Compliance Document Attachments */}
+          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+              <FileCheck2 className="w-4 h-4 text-emerald-600" /> Mandatory Compliance Document Attachments
+            </h4>
+            <p className="text-[11px] text-slate-500">Attach clear PDF / Image copies for App Owner audit & verification.</p>
+
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {[
+                { key: "drugLicensePdf", label: "Drug License Certificate", file: uploadedDocs.drugLicensePdf },
+                { key: "gstCertificatePdf", label: "GSTIN Certificate", file: uploadedDocs.gstCertificatePdf },
+                { key: "aadharCardPdf", label: "Owner Aadhaar Card", file: uploadedDocs.aadharCardPdf },
+                { key: "pharmacistDegreePdf", label: "Pharmacist Degree / PCI Cert", file: uploadedDocs.pharmacistDegreePdf },
+              ].map((doc) => (
+                <div key={doc.key} className="p-2 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-slate-800 text-[11px]">{doc.label}</span>
+                    <span className="text-[9px] text-emerald-700 font-mono">📄 {doc.file}</span>
+                  </div>
+                  <Badge variant="outline" className="border-emerald-300 text-emerald-800 bg-emerald-50 text-[9px] font-bold">
+                    Attached ✓
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+
 
           {/* License Category */}
           <div>

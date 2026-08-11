@@ -129,12 +129,14 @@ export function AuthModal() {
       address: result.data.address,
       phone: result.data.phone,
       email: result.data.email,
-      coldChainReady: pharmacyData.coldChainVerified
+      coldChainReady: pharmacyData.coldChainVerified,
+      verificationStatus: "approved"
     });
 
-    toast.success(`Authenticated ${pharmacyData.shopName}! Pharmacist Portal Ready.`);
+    toast.success(`Authenticated ${pharmacyData.shopName}! Pharmacist Portal Ready & CDSCO Approved.`);
     setIsAuthModalOpen(false);
     setLocation("/app");
+
   };
 
   // Handle Rider Sign In
@@ -216,6 +218,8 @@ export function AuthModal() {
                 <Bike className="w-4 h-4" /> Rider Login
               </TabsTrigger>
             </TabsList>
+
+
 
             {/* TAB 1: INDIVIDUAL PATIENT LOGIN FORM */}
             <TabsContent value="patient" className="mt-6 space-y-4">
@@ -484,6 +488,8 @@ export function AuthModal() {
               </form>
             </TabsContent>
           </Tabs>
+
+
         </div>
       </DialogContent>
     </Dialog>

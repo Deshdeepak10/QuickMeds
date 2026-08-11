@@ -29,9 +29,21 @@
 - **Duty Status Control**: One-click Online/Offline shift toggle.
 - **OTP Verification Handoff**: Secure 4-digit PIN verification to ensure medicine handoff to the authorized recipient.
 
+### 👑 App Owner & Compliance Super Admin Portal
+- **High Security Authentication Gate**: Standalone FIDO2 WebAuthn & 2FA security gate modal (`OwnerSecurityAuthModal`) with 6-digit master PIN (`779922`), AES-256 session telemetry, and hardware Touch ID sensor simulation.
+- **CDSCO Pharmacy Audit Portal**: Centralized compliance center to inspect submitted partner applications, Drug License PDFs, GSTIN Certificates, State Pharmacy Council Reg #s, and Owner Aadhaar KYC.
+- **Interactive Document Inspector**: Full-scale e-Document inspection canvas with digital signature verification (SHA-256) and official audit trail logging.
+- **1-Click CDSCO Approval & Rejection**: Approve partner hubs with official CDSCO Verified Seals or issue rejection notices with custom feedback.
+
+### 🤖 Round Multilingual AI Assistant (24/7 Support)
+- **Round Floating Trigger Button**: Perfectly circular 14x14 badge (`w-14 h-14 rounded-full`) positioned cleanly at `bottom-6 right-6` with online status indicators.
+- **4-Role Contextual Help Engine**: Supports Patients, Pharmacies, Delivery Riders, and App Owners across 8 Indian languages (English, Hindi, Hinglish, Bengali, Tamil, Telugu, Marathi, Gujarati).
+- **Interactive Quick Action Triggers**: Direct one-click launchers for prescription uploads, live tracking, pharmacy registration, and owner security gates.
+
 ### 🔒 Enterprise Security & Rate Limiting
 - **Multi-Tier Configurable Rate Limiter**: Stricter limits on auth routes (`/api/auth/*`) with exponential backoff delay (`2s`, `4s`, `8s`...), per-IP & per-account rate tracking, and configurable thresholds.
 - **Strict Zod Input Validation**: Complete schema enforcement rejecting malformed payload types, lengths, and formats.
+
 
 ---
 
