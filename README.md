@@ -49,48 +49,6 @@
 
 ---
 
-## 🚀 Getting Started
-
-### Prerequisites
-- **Node.js**: v18.0.0 or higher
-- **pnpm** / **npm**: Package Manager
-
-### Installation & Setup
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Deshdeepak10/QuickMeds.git
-   cd QuickMeds
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   pnpm install
-   # or
-   npm install
-   ```
-
-3. **Configure Environment Variables**:
-   Copy `.env.example` to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-   *Required variables:*
-   - `PORT`: Server port (Default: `3000`)
-   - `VITE_FRONTEND_FORGE_API_KEY`: Google Maps Proxy API Key
-
-4. **Launch Development Server**:
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:3000` in your browser.
-
-5. **Build for Production**:
-   ```bash
-   npm run build
-   ```
-
----
 
 ## 📐 Project Structure
 
