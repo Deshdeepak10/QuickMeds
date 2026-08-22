@@ -197,7 +197,7 @@ const PHARMACIES = [
 
 export default function MedicineMVP() {
   const [, setLocation] = useLocation();
-  const { user, setIsAuthModalOpen, setIsOwnerAuthModalOpen, registeredPharmacies, approvePharmacyStore, rejectPharmacyStore, setIsPharmacyRegisterModalOpen, logout } = useAuth();
+  const { user, setIsAuthModalOpen, setAuthModalRole, setIsOwnerAuthModalOpen, registeredPharmacies, approvePharmacyStore, rejectPharmacyStore, setIsPharmacyRegisterModalOpen, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("ocr");
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
 
@@ -558,7 +558,10 @@ export default function MedicineMVP() {
             <Button
               size="sm"
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs text-xs px-3 py-1.5"
-              onClick={() => setIsAuthModalOpen(true)}
+              onClick={() => {
+                setAuthModalRole(user.role);
+                setIsAuthModalOpen(true);
+              }}
             >
               Switch Role
             </Button>

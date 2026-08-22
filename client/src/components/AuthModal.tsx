@@ -1,44 +1,32 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { useAuth, UserRole, PRESET_USERS } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   User,
   Building2,
   Bike,
-  ShieldCheck,
-  ArrowRight,
-  KeyRound,
-  Smartphone,
-  CheckCircle2,
-  Lock,
-  Thermometer,
-  FileText,
-  MapPin,
-  Phone,
-  Mail,
-  Award
+  ArrowRight
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
-import { AuthCustomLoginSchema, PhoneSignupSchema, PharmacyRegisterSchema } from "@shared/schemas";
+import { PhoneSignupSchema, PharmacyRegisterSchema } from "@shared/schemas";
 
 export function AuthModal() {
   const [, setLocation] = useLocation();
   const {
     isAuthModalOpen,
     setIsAuthModalOpen,
+    authModalRole,
     loginAsRole,
-    loginWithCustom,
     registerPharmacyStore,
     registerUserWithPhone
   } = useAuth();
 
-  const [activeRole, setActiveRole] = useState<UserRole>("patient");
+  const activeRole = authModalRole || "patient";
 
   // 1. Patient Login Form State
   const [patientData, setPatientData] = useState({
@@ -170,59 +158,67 @@ export function AuthModal() {
     setLocation("/app");
   };
 
+  const getHeaderConfig = () => {
+    switch (activeRole) {
+      case "pharmacy":
+        return {
+          gradient: "bg-gradient-to-r from-amber-700 via-amber-800 to-amber-900",
+          icon: <Building2 className="w-6 h-6" />,
+          title: "QuickMed Pharmacy Authentication",
+          description: "Licensed Pharmacy Store Partner • Pharmacist Audit Portal",
+          badge: "PHARMACY LOGIN"
+        };
+      case "rider":
+        return {
+          gradient: "bg-gradient-to-r from-cyan-700 via-teal-800 to-cyan-900",
+          icon: <Bike className="w-6 h-6" />,
+          title: "QuickMed Rider Authentication",
+          description: "Express Delivery Partner • Cold-Chain Courier Portal",
+          badge: "RIDER LOGIN"
+        };
+      case "patient":
+      default:
+        return {
+          gradient: "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800",
+          icon: <User className="w-6 h-6" />,
+          title: "QuickMed Patient Authentication",
+          description: "Licensed Hyperlocal Medicine Platform • Patient Access",
+          badge: "PATIENT LOGIN"
+        };
+    }
+  };
+
+  const header = getHeaderConfig();
+
   return (
     <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
       <DialogContent className="sm:max-w-xl bg-white border-slate-200 text-slate-900 shadow-2xl rounded-3xl p-0 overflow-hidden">
         {/* Modal Top Header */}
-        <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-cyan-800 p-6 text-white">
+        <div className={`${header.gradient} p-6 text-white`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 text-white">
-                <ShieldCheck className="w-6 h-6" />
+                {header.icon}
               </div>
               <div>
                 <DialogTitle className="text-xl font-extrabold text-white">
-                  QuickMed Role Authentication
+                  {header.title}
                 </DialogTitle>
                 <DialogDescription className="text-white/90 text-xs mt-0.5 font-medium">
-                  Licensed Hyperlocal Medicine Platform • Ghaziabad Hub
+                  {header.description}
                 </DialogDescription>
               </div>
             </div>
             <Badge className="bg-white/20 text-white border-white/30 uppercase text-[10px] font-bold">
-              {activeRole} Login
+              {header.badge}
             </Badge>
           </div>
         </div>
 
-        {/* Individual Role Login Tabs */}
+        {/* Modal Content for Selected Role */}
         <div className="p-6 space-y-6">
-          <Tabs value={activeRole} onValueChange={(val) => setActiveRole(val as UserRole)} className="w-full">
-            <TabsList className="grid grid-cols-3 bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
-              <TabsTrigger
-                value="patient"
-                className="rounded-xl font-extrabold text-xs py-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white shadow-sm flex items-center justify-center gap-1.5"
-              >
-                <User className="w-4 h-4" /> Patient Login
-              </TabsTrigger>
-              <TabsTrigger
-                value="pharmacy"
-                className="rounded-xl font-extrabold text-xs py-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white shadow-sm flex items-center justify-center gap-1.5"
-              >
-                <Building2 className="w-4 h-4" /> Pharmacy Login
-              </TabsTrigger>
-              <TabsTrigger
-                value="rider"
-                className="rounded-xl font-extrabold text-xs py-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white shadow-sm flex items-center justify-center gap-1.5"
-              >
-                <Bike className="w-4 h-4" /> Rider Login
-              </TabsTrigger>
-            </TabsList>
-
-
-
-            {/* TAB 1: INDIVIDUAL PATIENT LOGIN FORM */}
-            <TabsContent value="patient" className="mt-6 space-y-4">
+          {activeRole === "patient" && (
+            <div className="space-y-4">
               <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between">
                 <div>
                   <h4 className="font-extrabold text-sm text-emerald-900 flex items-center gap-1.5">
@@ -300,10 +296,12 @@ export function AuthModal() {
                   Sign In to Patient Portal <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </form>
-            </TabsContent>
+            </div>
+          )}
 
-            {/* TAB 2: INDIVIDUAL PHARMACY SHOP LOGIN & ONBOARDING FORM */}
-            <TabsContent value="pharmacy" className="mt-6 space-y-4">
+          {/* ROLE 2: INDIVIDUAL PHARMACY SHOP LOGIN FORM */}
+          {activeRole === "pharmacy" && (
+            <div className="space-y-4">
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between">
                 <div>
                   <h4 className="font-extrabold text-sm text-amber-900 flex items-center gap-1.5">
@@ -393,10 +391,12 @@ export function AuthModal() {
                   Authenticate Pharmacy Store Partner <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </form>
-            </TabsContent>
+            </div>
+          )}
 
-            {/* TAB 3: INDIVIDUAL RIDER COURIER LOGIN & ONBOARDING FORM */}
-            <TabsContent value="rider" className="mt-6 space-y-4">
+          {/* ROLE 3: INDIVIDUAL RIDER COURIER LOGIN FORM */}
+          {activeRole === "rider" && (
+            <div className="space-y-4">
               <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-2xl flex items-center justify-between">
                 <div>
                   <h4 className="font-extrabold text-sm text-cyan-900 flex items-center gap-1.5">
@@ -486,10 +486,8 @@ export function AuthModal() {
                   Start Rider Shift & Enter Courier Dashboard <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </form>
-            </TabsContent>
-          </Tabs>
-
-
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

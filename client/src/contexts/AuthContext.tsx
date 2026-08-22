@@ -109,6 +109,8 @@ interface AuthContextType {
 
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
+  authModalRole: UserRole;
+  setAuthModalRole: (role: UserRole) => void;
   isOwnerAuthModalOpen: boolean;
   setIsOwnerAuthModalOpen: (open: boolean) => void;
   isPharmacyRegisterModalOpen: boolean;
@@ -126,6 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("quickmed_jwt"));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalRole, setAuthModalRole] = useState<UserRole>("patient");
   const [isOwnerAuthModalOpen, setIsOwnerAuthModalOpen] = useState(false);
   const [isPharmacyRegisterModalOpen, setIsPharmacyRegisterModalOpen] = useState(false);
   const [isPhoneSignupModalOpen, setIsPhoneSignupModalOpen] = useState(false);
@@ -403,6 +406,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         isAuthModalOpen,
         setIsAuthModalOpen,
+        authModalRole,
+        setAuthModalRole,
         isOwnerAuthModalOpen,
         setIsOwnerAuthModalOpen,
         isPharmacyRegisterModalOpen,

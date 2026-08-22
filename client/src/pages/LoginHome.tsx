@@ -15,9 +15,7 @@ import { toast } from "sonner";
 
 export default function LoginHome() {
   const [, setLocation] = useLocation();
-  const { loginAsRole, setIsAuthModalOpen, setIsOwnerAuthModalOpen, setIsPharmacyRegisterModalOpen, setIsPhoneSignupModalOpen, setPhoneSignupRole } = useAuth();
-  
-  const [, setSelectedRole] = useState<UserRole>("patient");
+  const { setAuthModalRole, setIsAuthModalOpen, setIsOwnerAuthModalOpen, setIsPharmacyRegisterModalOpen, setIsPhoneSignupModalOpen, setPhoneSignupRole } = useAuth();
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between">
@@ -99,7 +97,7 @@ export default function LoginHome() {
               <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-2">
                 <Button
                   onClick={() => {
-                    setSelectedRole("patient");
+                    setAuthModalRole("patient");
                     setIsAuthModalOpen(true);
                   }}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-5 shadow-sm"
@@ -157,7 +155,7 @@ export default function LoginHome() {
               <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-2">
                 <Button
                   onClick={() => {
-                    setSelectedRole("pharmacy");
+                    setAuthModalRole("pharmacy");
                     setIsAuthModalOpen(true);
                   }}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-5 shadow-sm"
@@ -212,7 +210,7 @@ export default function LoginHome() {
               <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-2">
                 <Button
                   onClick={() => {
-                    setSelectedRole("rider");
+                    setAuthModalRole("rider");
                     setIsAuthModalOpen(true);
                   }}
                   className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-5 shadow-sm"
