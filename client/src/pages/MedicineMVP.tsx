@@ -370,6 +370,8 @@ export default function MedicineMVP() {
   // Delivery Tracking State
   const [orderStage, setOrderStage] = useState<number>(1);
   const [riderProgress, setRiderProgress] = useState(25);
+  const [enteredPharmacyOtp, setEnteredPharmacyOtp] = useState("");
+  const [isPharmacyPickedUp, setIsPharmacyPickedUp] = useState(false);
   const [enteredOtp, setEnteredOtp] = useState("");
   const [isDelivered, setIsDelivered] = useState(false);
 
@@ -496,14 +498,25 @@ export default function MedicineMVP() {
     toast.success("Pharmacist digital signature applied! Order unlocked for dispatch.");
   };
 
+  const handleVerifyPharmacyOtp = () => {
+    if (enteredPharmacyOtp === "8514") {
+      setIsPharmacyPickedUp(true);
+      setOrderStage(3);
+      setRiderProgress(50);
+      toast.success("🎉 Store Pickup OTP Verified (8514)! Medicine package handed over to Rider Vikram Singh.");
+    } else {
+      toast.error("Invalid Pharmacy Pickup OTP! Enter 8514");
+    }
+  };
+
   const handleVerifyOtp = () => {
     if (enteredOtp === "4829") {
       setIsDelivered(true);
       setOrderStage(5);
       setRiderProgress(100);
-      toast.success("OTP verified! Package successfully handed over to patient.");
+      toast.success("🎉 Customer Delivery OTP Verified (4829)! Doorstep delivery complete.");
     } else {
-      toast.error("Invalid OTP! Try entering 4829");
+      toast.error("Invalid Customer OTP! Enter 4829");
     }
   };
 
@@ -1371,55 +1384,144 @@ export default function MedicineMVP() {
                   <Card className="bg-white border-slate-200 text-slate-900 shadow-md">
                     <CardHeader>
                       <CardTitle className="text-base text-slate-900 flex items-center gap-2">
-                        <Lock className="w-5 h-5 text-amber-600" /> Secure OTP Delivery Handshake
+                        <Lock className="w-5 h-5 text-amber-600" />
+                        {user.role === "pharmacy"
+                          ? "Pharmacy Store ↔ Rider Pickup OTP"
+                          : user.role === "patient"
+                          ? "Secure Patient Delivery PIN / OTP"
+                          : "Rider Order Handshake & Verification"}
                       </CardTitle>
                       <CardDescription className="text-slate-600 text-xs">
-                        {user.role === "patient"
+                        {user.role === "pharmacy"
+                          ? "Provide this 4-digit Store Pickup OTP to express rider Vikram Singh when handing over the cold-chain package."
+                          : user.role === "patient"
                           ? "Show or read this 4-digit PIN to your delivery rider upon package arrival."
-                          : "Ask the customer for their 4-digit Delivery OTP to confirm medicine handover."}
+                          : "Verify Store Pickup OTP with Pharmacy and Doorstep Delivery OTP with Patient."}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {/* Patient OTP Display (Patient view) */}
-                      {user.role === "patient" ? (
-                        <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl text-center space-y-2">
-                          <span className="text-xs text-amber-800 font-extrabold block uppercase tracking-wider">Your Delivery PIN / OTP</span>
-                          <span className="text-4xl font-mono font-extrabold text-amber-700 tracking-widest block">4829</span>
-                          <p className="text-xs text-slate-600 pt-1 font-medium">
-                            Give this code to rider <strong>Vikram Singh</strong> when receiving your medicine box.
-                          </p>
-                        </div>
-                      ) : (
-                        /* Rider OTP Entry Form (Rider view) */
+                      {/* PHARMACY VIEW: Store Pickup OTP (8514) */}
+                      {user.role === "pharmacy" && (
                         <div className="space-y-3">
-                          <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center">
-                            <span className="text-xs text-amber-800 font-bold uppercase tracking-wider block mb-1">Customer Delivery OTP</span>
-                            <span className="text-2xl font-mono font-extrabold text-amber-700 tracking-widest block">4829</span>
+                          <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl text-center space-y-2">
+                            <span className="text-xs text-emerald-800 font-extrabold block uppercase tracking-wider">Pharmacy Store Pickup OTP</span>
+                            <span className="text-4xl font-mono font-extrabold text-emerald-700 tracking-widest block">8514</span>
+                            <p className="text-xs text-slate-600 pt-1 font-medium">
+                              Express rider <strong>Vikram Singh</strong> will ask for this code (8514) to confirm package pickup from your store.
+                            </p>
                           </div>
 
-                          <label className="text-xs font-bold text-slate-700 block">Rider Handover Verification (Enter 4-digit OTP)</label>
-                          <div className="flex gap-2">
-                            <Input
-                              placeholder="Enter 4-digit OTP"
-                              value={enteredOtp}
-                              onChange={(e) => setEnteredOtp(e.target.value)}
-                              maxLength={4}
-                              className="bg-slate-50 border-slate-300 text-center font-mono text-lg text-slate-900 font-bold"
-                            />
-                            <Button
-                              onClick={handleVerifyOtp}
-                              className="bg-emerald-600 text-white hover:bg-emerald-700 font-bold px-6 shadow-sm whitespace-nowrap text-xs"
-                            >
-                              Verify & Handover
-                            </Button>
-                          </div>
+                          {isPharmacyPickedUp ? (
+                            <div className="p-3 bg-emerald-100 border border-emerald-300 rounded-xl text-emerald-900 text-xs font-semibold flex items-center gap-2">
+                              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                              <span>✓ Package handed over to Rider Vikram Singh! Store pickup verified.</span>
+                            </div>
+                          ) : (
+                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs font-medium flex items-center justify-between gap-2">
+                              <span>Waiting for Rider pickup verification (Code: 8514)...</span>
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setIsPharmacyPickedUp(true);
+                                  toast.success("🎉 Store Pickup OTP (8514) Verified! Rider Vikram Singh en route to patient.");
+                                }}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] h-7 px-3"
+                              >
+                                Simulate Rider Pickup ✓
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       )}
 
-                      {isDelivered && (
-                        <div className="p-4 bg-emerald-100 border border-emerald-300 rounded-xl text-emerald-900 text-xs font-semibold flex items-center gap-3">
-                          <CheckCircle2 className="w-6 h-6 flex-shrink-0 text-emerald-600" />
-                          <span>Order successfully delivered & verified! Prescription safety record updated.</span>
+                      {/* PATIENT VIEW: Customer Doorstep Delivery OTP (4829) */}
+                      {user.role === "patient" && (
+                        <div className="space-y-3">
+                          <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl text-center space-y-2">
+                            <span className="text-xs text-amber-800 font-extrabold block uppercase tracking-wider">Your Customer Delivery PIN / OTP</span>
+                            <span className="text-4xl font-mono font-extrabold text-amber-700 tracking-widest block">4829</span>
+                            <p className="text-xs text-slate-600 pt-1 font-medium">
+                              Give this code to rider <strong>Vikram Singh</strong> when receiving your medicine box.
+                            </p>
+                          </div>
+
+                          {isDelivered && (
+                            <div className="p-4 bg-emerald-100 border border-emerald-300 rounded-xl text-emerald-900 text-xs font-semibold flex items-center gap-3">
+                              <CheckCircle2 className="w-6 h-6 flex-shrink-0 text-emerald-600" />
+                              <span>Order successfully delivered & verified! Prescription safety record updated.</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* RIDER VIEW & OTHER ROLES: Dual Verification Form */}
+                      {(user.role === "rider" || user.role === "admin") && (
+                        <div className="space-y-4">
+                          {/* Step 1: Store Pickup OTP (8514) */}
+                          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-bold text-slate-900">Step 1: Pharmacy Store Pickup Verification</span>
+                              {isPharmacyPickedUp ? (
+                                <Badge className="bg-emerald-600 text-white text-[10px] font-bold">✓ Picked Up</Badge>
+                              ) : (
+                                <Badge variant="outline" className="border-amber-300 text-amber-800 bg-amber-50 text-[10px] font-bold">Pending Pickup</Badge>
+                              )}
+                            </div>
+
+                            {!isPharmacyPickedUp ? (
+                              <div className="flex gap-2 pt-1">
+                                <Input
+                                  placeholder="Enter Store OTP (8514)"
+                                  value={enteredPharmacyOtp}
+                                  onChange={(e) => setEnteredPharmacyOtp(e.target.value)}
+                                  maxLength={4}
+                                  className="bg-white border-slate-300 font-mono text-sm font-bold text-slate-900"
+                                />
+                                <Button
+                                  onClick={handleVerifyPharmacyOtp}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4"
+                                >
+                                  Verify Pickup
+                                </Button>
+                              </div>
+                            ) : (
+                              <p className="text-[11px] text-emerald-700 font-medium">✓ Pharmacy Pickup OTP (8514) verified at Apollo Hub.</p>
+                            )}
+                          </div>
+
+                          {/* Step 2: Customer Delivery OTP (4829) */}
+                          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-bold text-slate-900">Step 2: Customer Doorstep Delivery Verification</span>
+                              {isDelivered ? (
+                                <Badge className="bg-emerald-600 text-white text-[10px] font-bold">✓ Delivered</Badge>
+                              ) : (
+                                <Badge variant="outline" className="border-amber-300 text-amber-800 bg-amber-50 text-[10px] font-bold">Pending Delivery</Badge>
+                              )}
+                            </div>
+
+                            {!isPharmacyPickedUp ? (
+                              <p className="text-[11px] text-slate-500 italic">Complete Pharmacy Store Pickup first.</p>
+                            ) : !isDelivered ? (
+                              <div className="flex gap-2 pt-1">
+                                <Input
+                                  placeholder="Enter Patient PIN (4829)"
+                                  value={enteredOtp}
+                                  onChange={(e) => setEnteredOtp(e.target.value)}
+                                  maxLength={4}
+                                  className="bg-white border-slate-300 font-mono text-sm font-bold text-slate-900"
+                                />
+                                <Button
+                                  onClick={handleVerifyOtp}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4"
+                                >
+                                  Verify & Handover
+                                </Button>
+                              </div>
+                            ) : (
+                              <p className="text-[11px] text-emerald-700 font-medium">✓ Customer Delivery OTP (4829) verified. Handover complete.</p>
+                            )}
+                          </div>
                         </div>
                       )}
                     </CardContent>
