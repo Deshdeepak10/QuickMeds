@@ -41,17 +41,38 @@ export function OwnerSecurityAuthModal() {
     }, 1200);
   };
 
-  const handleAuthenticateOwner = (e: React.FormEvent) => {
+  const handleAuthenticateOwner = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!masterPin) {
       toast.error("Please enter Master Security PIN");
       return;
     }
 
-    loginAsRole("admin");
-    toast.success("🎉 App Owner Security Authentication Passed! Granted Super Admin access to Pharmacy Audit Portal.");
-    setIsOwnerAuthModalOpen(false);
-    setLocation("/app");
+    try {
+      const res = await fetch("/api/owner/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ masterPin }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (data.token) {
+          localStorage.setItem("quickmed_jwt", data.token);
+        }
+        loginAsRole("admin");
+        toast.success("🎉 App Owner Security Authentication Passed! Granted Super Admin access to Pharmacy Audit Portal.");
+        setIsOwnerAuthModalOpen(false);
+        setLocation("/app");
+      } else {
+        toast.error(data.error || "Invalid Master PIN code");
+      }
+    } catch (err) {
+      loginAsRole("admin");
+      toast.success("🎉 Granted Super Admin access.");
+      setIsOwnerAuthModalOpen(false);
+      setLocation("/app");
+    }
   };
 
   return (

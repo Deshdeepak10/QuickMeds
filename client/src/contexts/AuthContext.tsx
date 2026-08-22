@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 export type UserRole = "patient" | "pharmacy" | "rider" | "admin";
 
@@ -78,7 +78,7 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
     badge: "Express Courier #R-4402",
     avatar: "🏍️",
     location: "Ghaziabad Central Zone",
-    vehicleType: "EV Scooter (Cold Storage Box)",
+    vehicleType: "EV Scooter",
     verificationStatus: "approved"
   },
   admin: {
@@ -96,16 +96,16 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
 
 interface AuthContextType {
   user: UserSession;
+  token: string | null;
   isAuthenticated: boolean;
   loginAsRole: (role: UserRole) => void;
-  loginWithCustom: (name: string, role: UserRole, email: string) => void;
-  registerPharmacyStore: (store: Omit<PharmacyStoreData, "id" | "distance" | "rating" | "stockMatched" | "etaMinutes"> & { verificationStatus?: "approved" | "pending" | "rejected" }) => void;
-  approvePharmacyStore: (storeId: string) => void;
-  rejectPharmacyStore: (storeId: string, reason: string) => void;
+  loginWithCustom: (name: string, role: UserRole, email: string) => Promise<void>;
+  registerPharmacyStore: (store: Omit<PharmacyStoreData, "id" | "distance" | "rating" | "stockMatched" | "etaMinutes"> & { verificationStatus?: "approved" | "pending" | "rejected" }) => Promise<void>;
+  approvePharmacyStore: (storeId: string) => Promise<void>;
+  rejectPharmacyStore: (storeId: string, reason: string) => Promise<void>;
   registerUserWithPhone: (data: { name: string; phone: string; role: "patient" | "rider"; email?: string; vehicleType?: string; location?: string }) => void;
   registeredPharmacies: PharmacyStoreData[];
   logout: () => void;
-
 
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
@@ -123,6 +123,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserSession>(PRESET_USERS.patient);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("quickmed_jwt"));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isOwnerAuthModalOpen, setIsOwnerAuthModalOpen] = useState(false);
@@ -130,14 +131,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isPhoneSignupModalOpen, setIsPhoneSignupModalOpen] = useState(false);
   const [phoneSignupRole, setPhoneSignupRole] = useState<"patient" | "rider">("patient");
 
-
   const [registeredPharmacies, setRegisteredPharmacies] = useState<PharmacyStoreData[]>([
     {
       id: "p1",
       ownerName: "Pharm. Priya Nair",
       shopName: "Apollo Pharmacy - Express Hub (Raj Nagar, Ghaziabad)",
       licenseNo: "UP-2021-00921",
-      category: "Cold-Chain Certified Retail",
+      category: "Certified Retail Hub",
       address: "Kavi Nagar Main Rd, Ghaziabad",
       phone: "+91 98765 43210",
       email: "hub.ghaziabad@apollopharmacy.in",
@@ -166,61 +166,158 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   ]);
 
+  // Fetch registered pharmacies from DB on load
+  useEffect(() => {
+    fetch("/api/pharmacies")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.pharmacies && Array.isArray(data.pharmacies)) {
+          const mapped = data.pharmacies.map((p: any) => ({
+            id: p.id,
+            ownerName: p.owner_name,
+            shopName: p.shop_name,
+            licenseNo: p.license_no,
+            gstNo: p.gst_no,
+            ownerAadhar: p.owner_aadhar,
+            pharmacistRegNo: p.pharmacist_reg_no,
+            category: p.category,
+            address: p.address,
+            phone: p.phone,
+            email: p.email,
+            distance: "0.8 km",
+            rating: p.rating || "5.0 ★",
+            coldChainReady: true,
+            stockMatched: 100,
+            etaMinutes: 180,
+            verificationStatus: p.verification_status || "pending",
+            rejectionReason: p.rejection_reason,
+          }));
+
+          setRegisteredPharmacies(mapped);
+        }
+      })
+      .catch((err) => console.log("Pharmacies fetch note:", err));
+  }, []);
+
   const loginAsRole = (role: UserRole) => {
     setUser(PRESET_USERS[role]);
     setIsAuthenticated(true);
     setIsAuthModalOpen(false);
   };
 
-  const loginWithCustom = (name: string, role: UserRole, email: string) => {
-    setUser({
-      id: `u-${Date.now()}`,
-      name,
-      role,
-      email,
-      badge: `${role.toUpperCase()} #${Math.floor(1000 + Math.random() * 9000)}`,
-      avatar: role === "patient" ? "👩‍💼" : role === "pharmacy" ? "🏥" : "🏍️",
-      verificationStatus: "approved"
-    });
+  const loginWithCustom = async (name: string, role: UserRole, email: string) => {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customName: name,
+          customEmail: email,
+          password: "Password123",
+          selectedRole: role,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.token) {
+        setToken(data.token);
+        localStorage.setItem("quickmed_jwt", data.token);
+        setUser(data.user);
+      } else {
+        setUser({
+          id: `u-${Date.now()}`,
+          name,
+          role,
+          email,
+          badge: `${role.toUpperCase()} #${Math.floor(1000 + Math.random() * 9000)}`,
+          avatar: role === "patient" ? "👩‍💼" : role === "pharmacy" ? "🏥" : "🏍️",
+          verificationStatus: "approved"
+        });
+      }
+    } catch (err) {
+      setUser({
+        id: `u-${Date.now()}`,
+        name,
+        role,
+        email,
+        badge: `${role.toUpperCase()} #${Math.floor(1000 + Math.random() * 9000)}`,
+        avatar: role === "patient" ? "👩‍💼" : role === "pharmacy" ? "🏥" : "🏍️",
+        verificationStatus: "approved"
+      });
+    }
+
     setIsAuthenticated(true);
     setIsAuthModalOpen(false);
   };
 
-  const registerPharmacyStore = (storeInput: Omit<PharmacyStoreData, "id" | "distance" | "rating" | "stockMatched" | "etaMinutes"> & { verificationStatus?: "approved" | "pending" | "rejected" }) => {
+  const registerPharmacyStore = async (storeInput: Omit<PharmacyStoreData, "id" | "distance" | "rating" | "stockMatched" | "etaMinutes"> & { verificationStatus?: "approved" | "pending" | "rejected" }) => {
+    const status = storeInput.verificationStatus || "pending";
 
-    const status = storeInput.verificationStatus || "approved";
-    const newStore: PharmacyStoreData = {
-      ...storeInput,
-      id: `p-${Date.now()}`,
-      distance: "0.5 km",
-      rating: "5.0 ★",
-      stockMatched: 100,
-      etaMinutes: 180,
-      verificationStatus: status
-    };
+    try {
+      const res = await fetch("/api/pharmacy/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(storeInput),
+      });
 
+      const data = await res.json();
+      if (res.ok && data.store) {
+        const newStore: PharmacyStoreData = {
+          ...storeInput,
+          id: data.store.id,
+          distance: "0.5 km",
+          rating: "5.0 ★",
+          stockMatched: 100,
+          etaMinutes: 180,
+          verificationStatus: data.store.verificationStatus || "pending"
+        };
+        setRegisteredPharmacies((prev) => [newStore, ...prev]);
 
-    setRegisteredPharmacies((prev) => [newStore, ...prev]);
-
-    setUser({
-      id: newStore.id,
-      name: newStore.shopName,
-      role: "pharmacy",
-      email: newStore.email,
-      phone: newStore.phone,
-      badge: `DL #${newStore.licenseNo}`,
-      avatar: "🏥",
-      shopName: newStore.shopName,
-      licenseNo: newStore.licenseNo,
-      location: newStore.address,
-      verificationStatus: status
-    });
+        setUser({
+          id: newStore.id,
+          name: newStore.shopName,
+          role: "pharmacy",
+          email: newStore.email,
+          phone: newStore.phone,
+          badge: `DL #${newStore.licenseNo}`,
+          avatar: "🏥",
+          shopName: newStore.shopName,
+          licenseNo: newStore.licenseNo,
+          location: newStore.address,
+          verificationStatus: newStore.verificationStatus
+        });
+      }
+    } catch (err) {
+      const newStore: PharmacyStoreData = {
+        ...storeInput,
+        id: `p-${Date.now()}`,
+        distance: "0.5 km",
+        rating: "5.0 ★",
+        stockMatched: 100,
+        etaMinutes: 180,
+        verificationStatus: status
+      };
+      setRegisteredPharmacies((prev) => [newStore, ...prev]);
+    }
 
     setIsAuthenticated(true);
     setIsPharmacyRegisterModalOpen(false);
   };
 
-  const approvePharmacyStore = (storeId: string) => {
+  const approvePharmacyStore = async (storeId: string) => {
+    try {
+      await fetch("/api/owner/approve-pharmacy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ storeId }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
     setRegisteredPharmacies((prev) =>
       prev.map((store) =>
         store.id === storeId || store.licenseNo === storeId
@@ -235,7 +332,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  const rejectPharmacyStore = (storeId: string, reason: string) => {
+  const rejectPharmacyStore = async (storeId: string, reason: string) => {
+    try {
+      await fetch("/api/owner/reject-pharmacy", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ storeId, reason }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
     setRegisteredPharmacies((prev) =>
       prev.map((store) =>
         store.id === storeId || store.licenseNo === storeId
@@ -262,7 +372,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       badge: data.role === "patient" ? `Patient #${Math.floor(1000 + Math.random() * 9000)}` : `Rider #${Math.floor(1000 + Math.random() * 9000)}`,
       avatar: data.role === "patient" ? "👩‍💼" : "🏍️",
       vehicleType: data.vehicleType,
-      location: data.location || "Indiranagar, Bangalore"
+      location: data.location || "Ghaziabad, Uttar Pradesh"
     });
 
     setIsAuthenticated(true);
@@ -270,6 +380,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    localStorage.removeItem("quickmed_jwt");
+    setToken(null);
     setIsAuthenticated(false);
     setUser(PRESET_USERS.patient);
   };
@@ -278,6 +390,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        token,
         isAuthenticated,
         loginAsRole,
         loginWithCustom,
@@ -299,9 +412,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         phoneSignupRole,
         setPhoneSignupRole
       }}
-
     >
-
       {children}
     </AuthContext.Provider>
   );

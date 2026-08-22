@@ -15,6 +15,10 @@ export function createApp() {
   // Register API routes with Zod input validation & rate limiters
   registerRoutes(app);
 
+  // Serve uploaded prescriptions
+  const uploadsPath = path.resolve(__dirname, "..", "uploads");
+  app.use("/uploads", express.static(uploadsPath));
+
   // Serve static files from dist/public in production
   const staticPath =
     process.env.NODE_ENV === "production"

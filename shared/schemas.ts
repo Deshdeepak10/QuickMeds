@@ -201,6 +201,19 @@ export const ChatAgentMessageSchema = z.object({
     .optional(),
 });
 
+// GSTIN Verification Schema
+export const GSTINVerifySchema = z.object({
+  gstin: z
+    .string()
+    .trim()
+    .regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/, "Invalid GSTIN format (e.g. 09AABCA1234F1Z5)"),
+});
+
+// App Owner Auth Schema
+export const OwnerAuthSchema = z.object({
+  masterPin: z.string().trim().min(4, "Master PIN required"),
+});
+
 export type AuthCustomLoginInput = z.infer<typeof AuthCustomLoginSchema>;
 export type PhoneSignupInput = z.infer<typeof PhoneSignupSchema>;
 export type VerifyOtpInput = z.infer<typeof VerifyOtpSchema>;
@@ -208,4 +221,7 @@ export type PharmacyRegisterInput = z.infer<typeof PharmacyRegisterSchema>;
 export type RevenueCalculatorInput = z.infer<typeof RevenueCalculatorSchema>;
 export type PrescriptionUploadInput = z.infer<typeof PrescriptionUploadSchema>;
 export type ChatAgentMessageInput = z.infer<typeof ChatAgentMessageSchema>;
+export type GSTINVerifyInput = z.infer<typeof GSTINVerifySchema>;
+export type OwnerAuthInput = z.infer<typeof OwnerAuthSchema>;
+
 

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
+import { GSTINVerifier } from "@/components/GSTINVerifier";
 import { Building2, ShieldCheck, CheckCircle2, FileCheck2, Sparkles, Upload, MapPin, Phone, Mail, User } from "lucide-react";
 import { toast } from "sonner";
 import { PharmacyRegisterSchema } from "@shared/schemas";
@@ -180,33 +181,27 @@ export function PharmacyRegisterModal() {
           </div>
 
           {/* Additional Mandatory Regulatory Compliance Numbers */}
-          <div className="grid sm:grid-cols-3 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">GSTIN Number *</label>
-              <Input
-                placeholder="e.g. 09ABCDE1234F1Z5"
-                value={gstNo}
-                onChange={(e) => setGstNo(e.target.value)}
-                className="bg-slate-50 border-slate-300 font-mono text-slate-900 text-xs"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">State Pharmacy Reg #</label>
-              <Input
-                placeholder="e.g. PCI-UP-88210"
-                value={pharmacistRegNo}
-                onChange={(e) => setPharmacistRegNo(e.target.value)}
-                className="bg-slate-50 border-slate-300 font-mono text-slate-900 text-xs"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Owner Aadhaar KYC</label>
-              <Input
-                placeholder="e.g. 4521-9874-1234"
-                value={ownerAadhar}
-                onChange={(e) => setOwnerAadhar(e.target.value)}
-                className="bg-slate-50 border-slate-300 font-mono text-slate-900 text-xs"
-              />
+          <div className="space-y-3">
+            <GSTINVerifier value={gstNo} onVerified={(verifiedGstin) => setGstNo(verifiedGstin)} />
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">State Pharmacy Reg #</label>
+                <Input
+                  placeholder="e.g. PCI-UP-88210"
+                  value={pharmacistRegNo}
+                  onChange={(e) => setPharmacistRegNo(e.target.value)}
+                  className="bg-slate-50 border-slate-300 font-mono text-slate-900 text-xs"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Owner Aadhaar KYC</label>
+                <Input
+                  placeholder="e.g. 4521-9874-1234"
+                  value={ownerAadhar}
+                  onChange={(e) => setOwnerAadhar(e.target.value)}
+                  className="bg-slate-50 border-slate-300 font-mono text-slate-900 text-xs"
+                />
+              </div>
             </div>
           </div>
 

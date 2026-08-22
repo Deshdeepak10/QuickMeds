@@ -43,6 +43,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { PrescriptionUploader } from "@/components/PrescriptionUploader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -198,6 +199,7 @@ export default function MedicineMVP() {
   const [, setLocation] = useLocation();
   const { user, setIsAuthModalOpen, setIsOwnerAuthModalOpen, registeredPharmacies, approvePharmacyStore, rejectPharmacyStore, setIsPharmacyRegisterModalOpen, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("ocr");
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
 
 
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -220,7 +222,7 @@ export default function MedicineMVP() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scannedData, setScannedData] = useState<ScannedRx | null>(SAMPLE_RX_DATA.diabetes);
-  
+
   // Custom File Upload Ref & State
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; url: string | null } | null>(null);
@@ -357,7 +359,7 @@ export default function MedicineMVP() {
   const [pharmacistNote, setPharmacistNote] = useState("Prescription verified. Doctor registration valid. Cold chain items flagged for insulated packaging.");
 
 
-  
+
   // Pharmacy Selection State
   const [selectedPharmacy, setSelectedPharmacy] = useState(PHARMACIES[0]);
 
@@ -368,7 +370,6 @@ export default function MedicineMVP() {
   // Delivery Tracking State
   const [orderStage, setOrderStage] = useState<number>(1);
   const [riderProgress, setRiderProgress] = useState(25);
-  const [coldTemp, setColdTemp] = useState(3.8);
   const [enteredOtp, setEnteredOtp] = useState("");
   const [isDelivered, setIsDelivered] = useState(false);
 
@@ -467,12 +468,11 @@ export default function MedicineMVP() {
     }, 300);
   };
 
-  // Simulate rider movement and temperature fluctuations
+  // Simulate rider movement
   useEffect(() => {
     if (orderStage === 3 || orderStage === 4) {
       const interval = setInterval(() => {
         setRiderProgress((prev) => (prev < 90 ? prev + 5 : prev));
-        setColdTemp((prev) => +(3.6 + Math.random() * 0.8).toFixed(1));
       }, 2000);
       return () => clearInterval(interval);
     }
@@ -630,33 +630,34 @@ export default function MedicineMVP() {
       <div className="bg-white border-b border-slate-200 py-3 shadow-xs">
         <div className="container mx-auto px-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className={`bg-slate-100 border border-slate-200 p-1.5 rounded-xl flex overflow-x-auto md:grid ${user.role === "admin" ? "md:grid-cols-7" : "md:grid-cols-6"} gap-1.5 w-full scrollbar-none`}>
-              <TabsTrigger value="ocr" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">
-                1. Rx OCR
-              </TabsTrigger>
-              <TabsTrigger value="verification" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">
-                2. Rx Audit
-              </TabsTrigger>
-              <TabsTrigger value="dispatch" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">
-                3. Sourcing
-              </TabsTrigger>
-              <TabsTrigger value="delivery" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">
-                4. Cold-Chain
-              </TabsTrigger>
-              <TabsTrigger value="reminders" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">
-                5. Pill Vault
-              </TabsTrigger>
-              <TabsTrigger value="revenue" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">
-                6. Economics
-              </TabsTrigger>
+            <TabsList className="bg-slate-100 border border-slate-200 p-1.5 rounded-xl flex overflow-x-auto gap-1.5 w-full scrollbar-none">
+              {user.role === "patient" && (
+                <>
+                  <TabsTrigger value="ocr" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">1. Rx OCR</TabsTrigger>
+                  <TabsTrigger value="dispatch" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">2. Sourcing</TabsTrigger>
+                  <TabsTrigger value="delivery" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">3. Cold-Chain</TabsTrigger>
+                  <TabsTrigger value="reminders" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">4. Pill Vault</TabsTrigger>
+                </>
+              )}
+              {user.role === "pharmacy" && (
+                <>
+                  <TabsTrigger value="verification" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">1. Rx Audit</TabsTrigger>
+                  <TabsTrigger value="dispatch" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">2. Sourcing</TabsTrigger>
+                  <TabsTrigger value="delivery" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">3. Dispatch</TabsTrigger>
+                </>
+              )}
+              {user.role === "rider" && (
+                <>
+                  <TabsTrigger value="delivery" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">1. Delivery</TabsTrigger>
+                </>
+              )}
               {user.role === "admin" && (
-                <TabsTrigger value="admin" className="shrink-0 whitespace-nowrap data-[state=active]:bg-purple-700 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">
-                  👑 App Owner Portal
-                </TabsTrigger>
+                <>
+                  <TabsTrigger value="admin" className="shrink-0 whitespace-nowrap data-[state=active]:bg-purple-700 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">👑 App Owner Portal</TabsTrigger>
+                  <TabsTrigger value="revenue" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">Economics</TabsTrigger>
+                </>
               )}
             </TabsList>
-
-
 
             {/* TAB CONTENT 1: RX OCR */}
             <TabsContent value="ocr" className="mt-8 space-y-6">
@@ -673,7 +674,12 @@ export default function MedicineMVP() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {/* Hidden File Input */}
+                      {/* Real Gemini Vision Prescription Uploader */}
+                      <PrescriptionUploader />
+
+                      <div className="pt-2 flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Or Select Preset Sample</span>
+                      </div>
                       <input
                         type="file"
                         ref={fileInputRef}
@@ -689,11 +695,10 @@ export default function MedicineMVP() {
                       <div className="grid grid-cols-2 gap-3">
                         <button
                           onClick={() => runOcrScan("diabetes")}
-                          className={`p-4 rounded-xl border text-left transition-all ${
-                            selectedPreset === "diabetes"
+                          className={`p-4 rounded-xl border text-left transition-all ${selectedPreset === "diabetes"
                               ? "border-emerald-500 bg-emerald-50 text-slate-900 shadow-xs"
                               : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
-                          }`}
+                            }`}
                         >
                           <span className="text-xs text-emerald-700 font-bold uppercase tracking-wider block mb-1">Rx Sample 1</span>
                           <span className="font-semibold block text-sm">Insulin & Diabetes Care</span>
@@ -702,11 +707,10 @@ export default function MedicineMVP() {
 
                         <button
                           onClick={() => runOcrScan("infection")}
-                          className={`p-4 rounded-xl border text-left transition-all ${
-                            selectedPreset === "infection"
+                          className={`p-4 rounded-xl border text-left transition-all ${selectedPreset === "infection"
                               ? "border-emerald-500 bg-emerald-50 text-slate-900 shadow-xs"
                               : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
-                          }`}
+                            }`}
                         >
                           <span className="text-xs text-cyan-700 font-bold uppercase tracking-wider block mb-1">Rx Sample 2</span>
                           <span className="font-semibold block text-sm">Antibiotic & Fever Course</span>
@@ -729,18 +733,17 @@ export default function MedicineMVP() {
                             processFileUpload(e.dataTransfer.files[0]);
                           }
                         }}
-                        className={`border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer ${
-                          selectedPreset === "custom" || isDragging
+                        className={`border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer ${selectedPreset === "custom" || isDragging
                             ? "border-emerald-500 bg-emerald-50/80 scale-[1.01]"
                             : "border-slate-300 hover:border-emerald-500 bg-slate-50 hover:bg-emerald-50/40"
-                        }`}
+                          }`}
                       >
                         <FileText className={`w-8 h-8 mx-auto mb-2 ${isDragging || selectedPreset === "custom" ? "text-emerald-600 animate-bounce" : "text-slate-400"}`} />
                         <p className="text-sm font-medium text-slate-800">
                           {uploadedFile ? `Uploaded: ${uploadedFile.name}` : "Drop prescription image or PDF here"}
                         </p>
                         <p className="text-xs text-slate-500 mt-1">Supports Local File, Live Camera, Google Drive & iCloud</p>
-                        
+
                         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                           <Button
                             size="sm"
@@ -818,7 +821,7 @@ export default function MedicineMVP() {
                                 </Badge>
                               )}
                             </CardDescription>
-                            
+
                             <div className="flex items-center gap-2 mt-3">
                               <Button
                                 size="sm"
@@ -1088,11 +1091,10 @@ export default function MedicineMVP() {
                             pharmacistOnDuty: pharmacy.ownerName + ` (Lic #${pharmacy.licenseNo})`
                           })}
 
-                          className={`p-5 rounded-xl border cursor-pointer transition-all ${
-                            isSelected
+                          className={`p-5 rounded-xl border cursor-pointer transition-all ${isSelected
                               ? "border-emerald-500 bg-emerald-50 text-slate-900 shadow-md"
                               : "border-slate-200 bg-white text-slate-800 hover:border-slate-300"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-start justify-between">
                             <div>
@@ -1167,15 +1169,14 @@ export default function MedicineMVP() {
                         <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
                           Select Delivery Timing & Speed
                         </label>
-                        
+
                         {/* Option 1: Standard 3 Hours Minimum */}
                         <div
                           onClick={() => setIsEmergencyExpress(false)}
-                          className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
-                            !isEmergencyExpress
+                          className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${!isEmergencyExpress
                               ? "border-emerald-500 bg-emerald-50 text-slate-900 shadow-xs"
                               : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-2.5">
                             <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -1190,11 +1191,10 @@ export default function MedicineMVP() {
                         {/* Option 2: Emergency Express Direct Store Contact */}
                         <div
                           onClick={() => setIsEmergencyExpress(true)}
-                          className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
-                            isEmergencyExpress
+                          className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${isEmergencyExpress
                               ? "border-rose-500 bg-rose-50/90 text-slate-900 shadow-xs ring-1 ring-rose-400"
                               : "border-slate-200 bg-slate-50 text-slate-700 hover:border-rose-300"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-2.5">
                             <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 animate-pulse" />
@@ -1251,22 +1251,46 @@ export default function MedicineMVP() {
                           <p className="text-slate-700 leading-tight">
                             Call medical store directly for instant dispatch coordination:
                           </p>
-                          <a
-                            href={`tel:${selectedPharmacy.phone || "+919876543210"}`}
-                            className="w-full text-center py-2 px-3 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
-                          >
-                            <PhoneCall className="w-3.5 h-3.5 text-white" /> Call Medical Store Directly ({selectedPharmacy.phone || "+91 98765 43210"})
-                          </a>
                         </div>
                       )}
 
+                      {/* Payment Method Selection Widget */}
+                      <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 mt-3">
+                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                          Select Payment Method
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setPaymentMethod("online")}
+                            className={`p-3 rounded-lg border text-left transition-all text-xs font-bold flex items-center justify-between ${paymentMethod === "online"
+                                ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                                : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
+                              }`}
+                          >
+                            <span>💳 Online (UPI / Card)</span>
+                            {paymentMethod === "online" && <span>✓</span>}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPaymentMethod("cod")}
+                            className={`p-3 rounded-lg border text-left transition-all text-xs font-bold flex items-center justify-between ${paymentMethod === "cod"
+                                ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                                : "bg-white text-slate-700 border-slate-200 hover:border-slate-300"
+                              }`}
+                          >
+                            <span>💵 Cash on Delivery</span>
+                            {paymentMethod === "cod" && <span>✓</span>}
+                          </button>
+                        </div>
+                      </div>
+
                       <Button
                         size="lg"
-                        className={`w-full font-bold py-6 text-base mt-4 shadow-md ${
-                          isEmergencyExpress
+                        className={`w-full font-bold py-6 text-base mt-4 shadow-md ${isEmergencyExpress
                             ? "bg-rose-600 hover:bg-rose-700 text-white"
                             : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                        }`}
+                          }`}
                         onClick={() => {
                           setOrderStage(3);
                           setActiveTab("delivery");
@@ -1286,7 +1310,7 @@ export default function MedicineMVP() {
               </div>
             </TabsContent>
 
-            {/* TAB CONTENT 4: COLD-CHAIN DELIVERY TRACKER */}
+            {/* TAB CONTENT 4: EXPRESS DELIVERY TRACKER */}
             <TabsContent value="delivery" className="mt-8 space-y-6">
               <div className="grid lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-7 space-y-6">
@@ -1294,33 +1318,21 @@ export default function MedicineMVP() {
                   <LiveTrackingMap
                     pharmacyName={selectedPharmacy.name}
                     riderProgress={riderProgress}
-                    coldTemp={coldTemp}
                   />
 
-                  {/* Live Telemetry Card */}
+                  {/* Live Delivery Status Card */}
                   <Card className="bg-white border-slate-200 text-slate-900 shadow-md">
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-base text-slate-900 flex items-center gap-2">
-                          <Thermometer className="w-5 h-5 text-cyan-600 animate-pulse" /> Cold-Chain Telemetry Monitor
+                          <ShieldCheck className="w-5 h-5 text-emerald-600 animate-pulse" /> Express Delivery Monitor
                         </CardTitle>
-                        <Badge className="bg-cyan-100 text-cyan-800 border-cyan-300">
-                          LIVE Sensor Stream
+                        <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
+                          LIVE Dispatch Stream
                         </Badge>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="p-6 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-                        <div>
-                          <span className="text-xs text-slate-500 block uppercase tracking-wider font-semibold">Insulated Box Temp</span>
-                          <span className="text-4xl font-extrabold text-cyan-700 mt-1 block">{coldTemp} °C</span>
-                          <span className="text-xs text-emerald-700 mt-1 block font-medium">Optimal Storage Zone (2°C - 8°C)</span>
-                        </div>
-                        <div className="w-16 h-16 rounded-full bg-cyan-100 border border-cyan-200 flex items-center justify-center text-cyan-600">
-                          <ShieldCheck className="w-8 h-8" />
-                        </div>
-                      </div>
-
                       {/* Map Visualizer Placeholder */}
                       <div className="h-64 bg-slate-100 border border-slate-200 rounded-xl relative overflow-hidden flex items-center justify-center p-6 text-center">
                         <div className="relative z-10 space-y-3 max-w-sm">
@@ -1691,9 +1703,8 @@ export default function MedicineMVP() {
         <button
           type="button"
           onClick={() => setActiveTab("ocr")}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${
-            activeTab === "ocr" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
-          }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${activeTab === "ocr" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
+            }`}
         >
           <FileText className="w-5 h-5" />
           <span>Rx Scan</span>
@@ -1702,9 +1713,8 @@ export default function MedicineMVP() {
         <button
           type="button"
           onClick={() => setActiveTab("verification")}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${
-            activeTab === "verification" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
-          }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${activeTab === "verification" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
+            }`}
         >
           <Building2 className="w-5 h-5" />
           <span>Audit</span>
@@ -1713,9 +1723,8 @@ export default function MedicineMVP() {
         <button
           type="button"
           onClick={() => setActiveTab("delivery")}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${
-            activeTab === "delivery" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
-          }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${activeTab === "delivery" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
+            }`}
         >
           <Truck className="w-5 h-5" />
           <span>GPS Track</span>
@@ -1724,9 +1733,8 @@ export default function MedicineMVP() {
         <button
           type="button"
           onClick={() => setActiveTab("reminders")}
-          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${
-            activeTab === "reminders" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
-          }`}
+          className={`flex flex-col items-center gap-0.5 text-[10px] font-extrabold transition-colors ${activeTab === "reminders" ? "text-emerald-600" : "text-slate-500 hover:text-slate-900"
+            }`}
         >
           <Pill className="w-5 h-5" />
           <span>Cabinet</span>
@@ -1849,18 +1857,16 @@ export default function MedicineMVP() {
             <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
               <button
                 onClick={() => setActiveCloudTab("gdrive")}
-                className={`py-2 rounded-lg flex items-center justify-center gap-2 transition-all ${
-                  activeCloudTab === "gdrive" ? "bg-white text-slate-900 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
-                }`}
+                className={`py-2 rounded-lg flex items-center justify-center gap-2 transition-all ${activeCloudTab === "gdrive" ? "bg-white text-slate-900 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
+                  }`}
               >
                 <HardDrive className="w-4 h-4 text-blue-600" /> Google Drive
               </button>
 
               <button
                 onClick={() => setActiveCloudTab("icloud")}
-                className={`py-2 rounded-lg flex items-center justify-center gap-2 transition-all ${
-                  activeCloudTab === "icloud" ? "bg-white text-slate-900 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
-                }`}
+                className={`py-2 rounded-lg flex items-center justify-center gap-2 transition-all ${activeCloudTab === "icloud" ? "bg-white text-slate-900 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
+                  }`}
               >
                 <Cloud className="w-4 h-4 text-sky-500" /> iCloud Drive
               </button>
@@ -1976,11 +1982,10 @@ export default function MedicineMVP() {
                 size="sm"
                 variant="outline"
                 onClick={() => setShowOcrOverlays((prev) => !prev)}
-                className={`h-7 text-xs font-semibold ${
-                  showOcrOverlays
+                className={`h-7 text-xs font-semibold ${showOcrOverlays
                     ? "border-emerald-500 bg-emerald-950/80 text-emerald-300"
                     : "border-slate-700 bg-slate-800 text-slate-300"
-                }`}
+                  }`}
               >
                 <Layers className="w-3.5 h-3.5 mr-1" /> {showOcrOverlays ? "OCR Overlays On" : "OCR Overlays Off"}
               </Button>

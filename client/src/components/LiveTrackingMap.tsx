@@ -34,9 +34,9 @@ interface LiveTrackingMapProps {
   riderName?: string;
   orderStage?: number;
   riderProgress?: number;
-  coldTemp?: number;
   riderPhone?: string;
   vehicleNo?: string;
+  showOtp?: boolean;
 }
 
 export function LiveTrackingMap({
@@ -45,13 +45,12 @@ export function LiveTrackingMap({
   riderName = "Vikram Singh",
   orderStage = 4,
   riderProgress = 60,
-  coldTemp = 3.8,
   riderPhone = "+91 98765 99887",
-  vehicleNo = "KA-01-EV-9821"
+  vehicleNo = "KA-01-EV-9821",
+  showOtp = false
 }: LiveTrackingMapProps) {
   const [progress, setProgress] = useState(riderProgress);
   const [isLiveMoving, setIsLiveMoving] = useState(true);
-  const [currentTemp, setCurrentTemp] = useState(coldTemp);
   const [riderSpeed, setRiderSpeed] = useState(28);
   const [mapMode, setMapMode] = useState<"quickmed_tech" | "google_maps">("google_maps");
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -63,12 +62,11 @@ export function LiveTrackingMap({
     setProgress(riderProgress);
   }, [riderProgress]);
 
-  // Simulate smooth GPS movement & temperature updates
+  // Simulate smooth GPS movement updates
   useEffect(() => {
     if (!isLiveMoving) return;
     const interval = setInterval(() => {
       setProgress((prev) => (prev < 96 ? prev + 0.8 : 12));
-      setCurrentTemp((prev) => +(3.5 + Math.random() * 0.7).toFixed(1));
       setRiderSpeed((prev) => Math.floor(25 + Math.random() * 8));
       if (Math.random() > 0.8) {
         setTrafficCondition((prev) => (prev === "Low" ? "Moderate" : "Low"));
@@ -261,11 +259,6 @@ export function LiveTrackingMap({
               className="absolute z-30 transition-all duration-700 ease-out flex flex-col items-center -translate-x-1/2 -translate-y-1/2"
               style={{ left: `${pathX}px`, top: `${pathY}px` }}
             >
-              {/* Cold Storage Box Floating Badge */}
-              <div className="mb-1 bg-cyan-950 border border-cyan-400 text-cyan-300 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-xl flex items-center gap-1 animate-pulse">
-                <Thermometer className="w-3.5 h-3.5 text-cyan-400" /> {currentTemp}°C Cold Storage
-              </div>
-
               {/* Bike Icon Marker */}
               <div className="relative">
                 <div className="w-12 h-12 bg-gradient-to-tr from-emerald-500 to-emerald-400 rounded-full p-0.5 shadow-2xl border-2 border-slate-950 flex items-center justify-center text-slate-950 font-bold">
@@ -335,10 +328,12 @@ export function LiveTrackingMap({
 
           {/* Quick Actions & OTP Verification */}
           <div className="flex items-center gap-3">
-            <div className="px-3 py-1.5 bg-slate-900 border border-emerald-500/30 rounded-xl text-center">
-              <span className="text-[10px] text-slate-400 block uppercase font-bold">Delivery OTP</span>
-              <strong className="text-emerald-400 text-sm font-mono font-extrabold tracking-wider">7392</strong>
-            </div>
+            {showOtp && (
+              <div className="px-3 py-1.5 bg-slate-900 border border-emerald-500/30 rounded-xl text-center">
+                <span className="text-[10px] text-slate-400 block uppercase font-bold">Delivery OTP</span>
+                <strong className="text-emerald-400 text-sm font-mono font-extrabold tracking-wider">7392</strong>
+              </div>
+            )}
 
             <Button
               size="sm"
@@ -363,7 +358,7 @@ export function LiveTrackingMap({
         <div className="flex items-center justify-between text-xs pt-1">
           <div className="flex items-center gap-2 text-slate-400 font-medium">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>Temperature monitored & cold-chain verified by CDSCO protocol</span>
+            <span>Prescription verified & safety-compliant by CDSCO protocol</span>
           </div>
 
           <div className="flex items-center gap-2">

@@ -6,28 +6,23 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
-import { Phone, User, Bike, ShieldCheck, ArrowRight, KeyRound, CheckCircle2, Sparkles, MapPin, Mail, Smartphone } from "lucide-react";
+import { Phone, User, Bike, ShieldCheck, ArrowRight, CheckCircle2, MapPin, Mail, Smartphone } from "lucide-react";
 import { toast } from "sonner";
-import { PhoneSignupSchema, VerifyOtpSchema } from "@shared/schemas";
+import { PhoneSignupSchema } from "@shared/schemas";
 
 export function PhoneSignupModal() {
   const [, setLocation] = useLocation();
   const { isPhoneSignupModalOpen, setIsPhoneSignupModalOpen, phoneSignupRole, setPhoneSignupRole, registerUserWithPhone } = useAuth();
 
-  const [step, setStep] = useState<"details" | "otp">("details");
-  const [name, setName] = useState("");
+  const [name, setName] = useState("Sarah Chen");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [locationPin, setLocationPin] = useState("Indiranagar, Bangalore (560038)");
   const [vehicleType, setVehicleType] = useState("EV Scooter (Cold Storage Box)");
   const [drivingLicense, setDrivingLicense] = useState("");
-  
-  // OTP Verification
-  const [enteredOtp, setEnteredOtp] = useState("");
-  const [generatedOtp, setGeneratedOtp] = useState("7392");
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSendOtp = (e: React.FormEvent) => {
+  const handlePhoneSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = PhoneSignupSchema.safeParse({
       name,
@@ -44,43 +39,22 @@ export function PhoneSignupModal() {
       return;
     }
 
-    setIsSendingOtp(true);
-    setTimeout(() => {
-      setIsSendingOtp(false);
-      setStep("otp");
-      toast.info(`📱 SMS OTP sent to +91 ${result.data.phone}! Enter OTP: 7392`);
-    }, 1000);
-  };
+    setIsSubmitting(true);
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    const otpResult = VerifyOtpSchema.safeParse({
+    // Instant registration (OTP verification bypassed per user configuration)
+    registerUserWithPhone({
+      name,
       phone,
-      enteredOtp,
+      role: phoneSignupRole,
+      email: email || undefined,
+      vehicleType: phoneSignupRole === "rider" ? vehicleType : undefined,
+      location: locationPin,
     });
 
-    if (!otpResult.success) {
-      toast.error(otpResult.error.issues[0]?.message || "Invalid OTP format");
-      return;
-    }
-
-    if (otpResult.data.enteredOtp === generatedOtp || otpResult.data.enteredOtp === "1234") {
-      registerUserWithPhone({
-        name,
-        phone,
-        role: phoneSignupRole,
-        email: email || undefined,
-        vehicleType: phoneSignupRole === "rider" ? vehicleType : undefined,
-        location: locationPin
-      });
-
-      toast.success(`🎉 Phone verified! Registered as ${phoneSignupRole.toUpperCase()}`);
-      setStep("details");
-      setEnteredOtp("");
-      setLocation("/app");
-    } else {
-      toast.error("Invalid OTP! Check SMS or enter demo code: 7392");
-    }
+    toast.success(`🎉 Instant Registration Complete! Logged in as ${phoneSignupRole.toUpperCase()}`);
+    setIsSubmitting(false);
+    setIsPhoneSignupModalOpen(false);
+    setLocation("/app");
   };
 
   return (
@@ -96,7 +70,7 @@ export function PhoneSignupModal() {
                 Phone Number Sign Up
               </DialogTitle>
               <DialogDescription className="text-slate-600 text-xs">
-                Register as a Patient or Delivery Rider using your mobile phone number.
+                Register as a Patient or Delivery Rider instantly using your mobile phone number.
               </DialogDescription>
             </div>
           </div>
@@ -124,142 +98,106 @@ export function PhoneSignupModal() {
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            <Bike className="w-3.5 h-3.5" /> Delivery Rider Sign Up
+            <Bike className="w-3.5 h-3.5" /> Delivery Rider
           </button>
         </div>
 
-        {step === "details" ? (
-          <form onSubmit={handleSendOtp} className="space-y-3.5 mt-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1">Full Name *</label>
+        {/* Form Details */}
+        <form onSubmit={handlePhoneSignup} className="space-y-3.5 mt-3">
+          <div>
+            <label className="text-xs font-semibold text-slate-700 block mb-1 flex items-center gap-1">
+              <User className="w-3.5 h-3.5 text-emerald-600" /> Full Name *
+            </label>
+            <Input
+              placeholder="e.g. Sarah Chen"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="bg-slate-50 border-slate-300 text-slate-900 text-sm"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-slate-700 block mb-1 flex items-center gap-1">
+              <Phone className="w-3.5 h-3.5 text-emerald-600" /> Mobile Phone Number *
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-mono font-bold">+91</span>
               <Input
-                placeholder={phoneSignupRole === "patient" ? "e.g. Ananya Sharma" : "e.g. Rahul Verma"}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="bg-slate-50 border-slate-300 text-slate-900 text-sm"
+                type="tel"
+                placeholder="9876543210"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                maxLength={10}
+                className="pl-12 bg-slate-50 border-slate-300 font-mono text-slate-900 text-sm font-bold"
                 required
               />
             </div>
+          </div>
 
+          {phoneSignupRole === "patient" ? (
             <div>
               <label className="text-xs font-semibold text-slate-700 block mb-1 flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-emerald-600" /> Mobile Phone Number *
+                <MapPin className="w-3.5 h-3.5 text-emerald-600" /> Delivery Address / Location Pin
               </label>
-              <div className="flex gap-2">
-                <div className="bg-slate-100 border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 flex items-center">
-                  🇮🇳 +91
-                </div>
-                <Input
-                  type="tel"
-                  placeholder="98765 43210"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                  maxLength={10}
-                  className="bg-slate-50 border-slate-300 font-mono text-slate-900 text-sm"
-                  required
-                />
-              </div>
+              <Input
+                placeholder="e.g. Indiranagar 100ft Rd, Bangalore"
+                value={locationPin}
+                onChange={(e) => setLocationPin(e.target.value)}
+                className="bg-slate-50 border-slate-300 text-slate-900 text-sm"
+              />
             </div>
-
-            {/* Role specific inputs */}
-            {phoneSignupRole === "patient" ? (
+          ) : (
+            <>
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-rose-500" /> Delivery Address / City
-                </label>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Vehicle Type</label>
+                <Select value={vehicleType} onValueChange={setVehicleType}>
+                  <SelectTrigger className="bg-slate-50 border-slate-300 text-slate-900 text-sm">
+                    <SelectValue placeholder="Select vehicle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EV Scooter (Cold Storage Box)">EV Scooter (Cold Storage Box)</SelectItem>
+                    <SelectItem value="Motorbike (Insulated Bag)">Motorbike (Insulated Bag)</SelectItem>
+                    <SelectItem value="Bicycle (Express Local)">Bicycle (Express Local)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1">Driver License ID</label>
                 <Input
-                  placeholder="e.g. Indiranagar 100ft Rd, Bangalore"
-                  value={locationPin}
-                  onChange={(e) => setLocationPin(e.target.value)}
+                  placeholder="e.g. DL-04202100982"
+                  value={drivingLicense}
+                  onChange={(e) => setDrivingLicense(e.target.value)}
                   className="bg-slate-50 border-slate-300 text-slate-900 text-sm"
                 />
               </div>
-            ) : (
-              <>
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Vehicle Type</label>
-                  <Select value={vehicleType} onValueChange={setVehicleType}>
-                    <SelectTrigger className="bg-slate-50 border-slate-300 text-slate-900 text-sm">
-                      <SelectValue placeholder="Select vehicle" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EV Scooter (Cold Storage Box)">EV Scooter (Cold Storage Box)</SelectItem>
-                      <SelectItem value="Motorbike (Insulated Bag)">Motorbike (Insulated Bag)</SelectItem>
-                      <SelectItem value="Bicycle (Express Local)">Bicycle (Express Local)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            </>
+          )}
 
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Driver License ID</label>
-                  <Input
-                    placeholder="e.g. DL-04202100982"
-                    value={drivingLicense}
-                    onChange={(e) => setDrivingLicense(e.target.value)}
-                    className="bg-slate-50 border-slate-300 text-slate-900 text-sm"
-                  />
-                </div>
-              </>
-            )}
+          <div>
+            <label className="text-xs font-semibold text-slate-700 block mb-1 flex items-center gap-1">
+              <Mail className="w-3.5 h-3.5 text-slate-400" /> Email Address (Optional)
+            </label>
+            <Input
+              type="email"
+              placeholder="user@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="bg-slate-50 border-slate-300 text-slate-900 text-sm"
+            />
+          </div>
 
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1 flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-slate-400" /> Email Address (Optional)
-              </label>
-              <Input
-                type="email"
-                placeholder="user@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-slate-50 border-slate-300 text-slate-900 text-sm"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              disabled={isSendingOtp}
-              className={`w-full font-bold py-5 text-sm shadow-md mt-2 ${
-                phoneSignupRole === "patient" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-cyan-600 hover:bg-cyan-700 text-white"
-              }`}
-            >
-              {isSendingOtp ? "Sending SMS OTP..." : "Get SMS Verification OTP →"}
-            </Button>
-          </form>
-        ) : (
-          /* Step 2: OTP Verification */
-          <form onSubmit={handleVerifyOtp} className="space-y-4 mt-3">
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center text-xs space-y-1">
-              <span className="text-slate-600 block">Enter the 4-digit code sent via SMS to</span>
-              <strong className="text-emerald-800 text-sm font-mono font-bold block">+91 {phone}</strong>
-              <Badge className="bg-emerald-600 text-white text-[10px] mt-1">Demo Code: {generatedOtp}</Badge>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-700 block mb-1 text-center">4-Digit Verification Code</label>
-              <Input
-                type="text"
-                placeholder="7 3 9 2"
-                value={enteredOtp}
-                onChange={(e) => setEnteredOtp(e.target.value)}
-                maxLength={4}
-                className="bg-slate-50 border-slate-300 text-center font-mono text-xl font-bold tracking-widest text-slate-900"
-                required
-              />
-            </div>
-
-            <Button type="submit" className="w-full bg-slate-900 text-white hover:bg-slate-800 font-bold py-5 text-sm">
-              Verify OTP & Complete Sign Up <CheckCircle2 className="w-4 h-4 ml-1" />
-            </Button>
-
-            <button
-              type="button"
-              onClick={() => setStep("details")}
-              className="text-xs text-slate-500 hover:text-slate-800 underline block mx-auto pt-1"
-            >
-              ← Edit Phone Number
-            </button>
-          </form>
-        )}
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full font-bold py-5 text-sm shadow-md mt-2 flex items-center justify-center gap-2 ${
+              phoneSignupRole === "patient" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-cyan-600 hover:bg-cyan-700 text-white"
+            }`}
+          >
+            {isSubmitting ? "Creating Account..." : "Complete Sign Up & Continue →"}
+          </Button>
+        </form>
       </DialogContent>
     </Dialog>
   );
