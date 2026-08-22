@@ -35,7 +35,12 @@ import {
   Printer,
   Download,
   ScanEye,
-  Layers
+  Layers,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2,
+  ShoppingBag
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -379,6 +384,82 @@ export default function MedicineMVP() {
   // Pill Reminder Checklist
   const [takenMeds, setTakenMeds] = useState<Record<string, boolean>>({});
 
+  // QuickMed Cart System State
+  interface CartItem {
+    id: string;
+    name: string;
+    genericName: string;
+    price: number;
+    quantity: number;
+    requiresColdChain?: boolean;
+  }
+
+  const [cartItems, setCartItems] = useState<CartItem[]>([
+    {
+      id: "m1",
+      name: "Lantus Solostar Pen (Insulin Glargine 100 IU/ml)",
+      genericName: "Insulin Glargine Disposable Pen 100 IU",
+      price: 890,
+      quantity: 1,
+      requiresColdChain: true,
+    },
+    {
+      id: "m2",
+      name: "Janumet 50mg/500mg (Sitagliptin + Metformin)",
+      genericName: "Sitagliptin + Metformin Hydrochloride 50mg/500mg",
+      price: 650,
+      quantity: 1,
+      requiresColdChain: false,
+    }
+  ]);
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
+
+  const addToCart = (med: { id: string; name: string; genericName: string; price: number; requiresColdChain?: boolean }) => {
+    setCartItems((prev) => {
+      const existing = prev.find((item) => item.id === med.id);
+      if (existing) {
+        toast.success(`Updated quantity for "${med.name}" in cart!`);
+        return prev.map((item) =>
+          item.id === med.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      toast.success(`🛒 Added "${med.name}" to cart!`);
+      return [
+        ...prev,
+        {
+          id: med.id,
+          name: med.name,
+          genericName: med.genericName,
+          price: med.price,
+          quantity: 1,
+          requiresColdChain: med.requiresColdChain,
+        },
+      ];
+    });
+  };
+
+  const removeFromCart = (id: string) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+    toast.info("Removed item from cart");
+  };
+
+  const updateCartQuantity = (id: string, delta: number) => {
+    setCartItems((prev) =>
+      prev
+        .map((item) => {
+          if (item.id === id) {
+            const newQty = item.quantity + delta;
+            return newQty > 0 ? { ...item, quantity: newQty } : null;
+          }
+          return item;
+        })
+        .filter((item): item is CartItem => item !== null)
+    );
+  };
+
+  const cartTotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
   // Process Prescription File Upload
   const processFileUpload = (file: File) => {
     if (!file) return;
@@ -548,6 +629,20 @@ export default function MedicineMVP() {
                 <span className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider block">{user.role}</span>
               </div>
             </div>
+
+            {/* Cart Option */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-emerald-500/40 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold text-xs px-3 py-1.5 flex items-center gap-1.5 shadow-xs"
+              onClick={() => setIsCartModalOpen(true)}
+            >
+              <ShoppingCart className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Cart</span>
+              <Badge className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ml-0.5">
+                {cartCount}
+              </Badge>
+            </Button>
 
             <Button
               size="sm"
@@ -860,12 +955,12 @@ export default function MedicineMVP() {
                         <div className="space-y-4">
                           <h4 className="text-xs uppercase font-bold tracking-wider text-slate-500">Extracted Medications & Pricing</h4>
                           {scannedData.meds.map((med) => {
-                            const isGeneric = useGenerics[med.id];
+                            const cartItem = cartItems.find((item) => item.id === med.id);
                             return (
                               <div key={med.id} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
                                 <div className="flex items-start justify-between">
                                   <div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
                                       <h5 className="font-bold text-slate-900 text-base">{med.name}</h5>
                                       {med.requiresColdChain && (
                                         <Badge variant="outline" className="border-cyan-300 text-cyan-800 bg-cyan-50 text-[10px]">
@@ -883,7 +978,7 @@ export default function MedicineMVP() {
                                   </div>
 
                                   <div className="text-right">
-                                    <span className="text-lg font-bold text-slate-900 block">₹{isGeneric ? med.genericPrice : med.price}</span>
+                                    <span className="text-lg font-bold text-slate-900 block">₹{med.price}</span>
                                     <span className="text-xs text-slate-500">Qty: {med.quantity}</span>
                                   </div>
                                 </div>
@@ -895,17 +990,40 @@ export default function MedicineMVP() {
                                   </div>
                                 )}
 
-                                {/* Generic Switcher */}
+                                {/* Add to Cart Action */}
                                 <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-xs">
-                                  <span className="text-slate-600">Save ₹{med.price - med.genericPrice} with Generic Equivalent</span>
-                                  <Button
-                                    size="sm"
-                                    variant={isGeneric ? "default" : "outline"}
-                                    onClick={() => toggleGeneric(med.id)}
-                                    className={isGeneric ? "bg-emerald-600 text-white hover:bg-emerald-700 font-bold" : "border-slate-300 text-slate-700"}
-                                  >
-                                    {isGeneric ? "Using Generic ✓" : "Switch to Generic"}
-                                  </Button>
+                                  <span className="text-slate-600 font-medium">Hyperlocal Express Stock Available</span>
+                                  {cartItem ? (
+                                    <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-300 px-3 py-1 rounded-xl">
+                                      <span className="text-emerald-800 font-bold text-xs flex items-center gap-1">
+                                        <Check className="w-3.5 h-3.5 text-emerald-600" /> Added ({cartItem.quantity})
+                                      </span>
+                                      <div className="flex items-center gap-1 ml-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => updateCartQuantity(med.id, -1)}
+                                          className="w-5 h-5 bg-white border border-slate-300 rounded text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center text-xs"
+                                        >
+                                          -
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => updateCartQuantity(med.id, 1)}
+                                          className="w-5 h-5 bg-white border border-slate-300 rounded text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center text-xs"
+                                        >
+                                          +
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => addToCart(med)}
+                                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5"
+                                    >
+                                      <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
                             );
@@ -913,18 +1031,28 @@ export default function MedicineMVP() {
                         </div>
 
                         {/* Summary Footer */}
-                        <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
+                        <div className="bg-slate-100 p-4 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <span className="text-xs text-slate-600 block">Est. Subtotal</span>
-                            <span className="text-2xl font-bold text-emerald-700">₹{calculateSubtotal()}</span>
+                            <span className="text-xs text-slate-600 block">Cart Total ({cartCount} items)</span>
+                            <span className="text-2xl font-bold text-emerald-700">₹{cartTotal}</span>
                           </div>
-                          <Button
-                            size="lg"
-                            className="bg-emerald-600 text-white hover:bg-emerald-700 font-bold shadow-md"
-                            onClick={() => setActiveTab("verification")}
-                          >
-                            Proceed to Pharmacist Audit <ChevronRight className="w-4 h-4 ml-1" />
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="lg"
+                              variant="outline"
+                              onClick={() => setIsCartModalOpen(true)}
+                              className="border-emerald-500/50 text-emerald-800 bg-white hover:bg-emerald-50 font-bold shadow-xs text-xs px-4"
+                            >
+                              <ShoppingCart className="w-4 h-4 mr-1 text-emerald-600" /> View Cart
+                            </Button>
+                            <Button
+                              size="lg"
+                              className="bg-emerald-600 text-white hover:bg-emerald-700 font-bold shadow-md text-xs px-5"
+                              onClick={() => setActiveTab("dispatch")}
+                            >
+                              Select Pharmacy Hub <ChevronRight className="w-4 h-4 ml-1" />
+                            </Button>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -2288,6 +2416,142 @@ export default function MedicineMVP() {
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* QUICKMED SHOPPING CART MODAL */}
+      <Dialog open={isCartModalOpen} onOpenChange={setIsCartModalOpen}>
+        <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto bg-white text-slate-900 border-slate-200 rounded-2xl sm:rounded-3xl p-6 shadow-2xl">
+          <DialogHeader className="border-b border-slate-100 pb-4 space-y-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-emerald-600 rounded-xl text-white shadow-md shadow-emerald-600/20">
+                  <ShoppingCart className="w-5 h-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-bold text-slate-900">
+                    Your Prescription Cart
+                  </DialogTitle>
+                  <DialogDescription className="text-slate-500 text-xs">
+                    {cartCount} item(s) selected for hyperlocal pharmacy dispatch
+                  </DialogDescription>
+                </div>
+              </div>
+              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 font-bold">
+                {cartCount} Items
+              </Badge>
+            </div>
+          </DialogHeader>
+
+          {cartItems.length === 0 ? (
+            <div className="py-12 text-center space-y-3">
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
+                <ShoppingBag className="w-8 h-8" />
+              </div>
+              <h4 className="font-bold text-slate-800 text-base">Your Cart is Empty</h4>
+              <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                Scan a prescription or browse medicines to add items to your cart.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4 pt-4">
+              {/* Itemized Cart List */}
+              <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+                {cartItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h5 className="font-bold text-slate-900 text-xs sm:text-sm truncate">{item.name}</h5>
+                        {item.requiresColdChain && (
+                          <Badge variant="outline" className="border-cyan-300 text-cyan-800 bg-cyan-50 text-[9px] shrink-0">
+                            ❄️ 2°C–8°C
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate mt-0.5">{item.genericName}</p>
+                      <span className="text-xs font-extrabold text-emerald-700 mt-1 block">₹{item.price} each</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      {/* Quantity Controls */}
+                      <div className="flex items-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
+                        <button
+                          type="button"
+                          onClick={() => updateCartQuantity(item.id, -1)}
+                          className="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded font-bold flex items-center justify-center text-xs"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="w-6 text-center font-mono font-extrabold text-xs text-slate-900">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => updateCartQuantity(item.id, 1)}
+                          className="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded font-bold flex items-center justify-center text-xs"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      <span className="font-mono font-bold text-slate-900 text-sm w-16 text-right">
+                        ₹{item.price * item.quantity}
+                      </span>
+
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => removeFromCart(item.id)}
+                        className="h-7 w-7 text-rose-500 hover:bg-rose-50 rounded-lg"
+                        title="Remove item"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Cold-Chain Compliance Banner */}
+              {cartItems.some((i) => i.requiresColdChain) && (
+                <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-xl text-xs text-cyan-900 flex items-center gap-2">
+                  <Thermometer className="w-4 h-4 text-cyan-600 shrink-0" />
+                  <span>Includes insulated cold-storage items (2°C–8°C). QuickMed temperature telemetry active.</span>
+                </div>
+              )}
+
+              {/* Cart Pricing Breakdown */}
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                <div className="flex justify-between text-slate-600">
+                  <span>Cart Items Subtotal ({cartCount} units)</span>
+                  <span className="font-mono font-bold text-slate-900">₹{cartTotal}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Hyperlocal Express Courier Fee</span>
+                  <span className="text-emerald-700 font-bold">FREE ✓</span>
+                </div>
+                <div className="pt-2 border-t border-slate-200 flex justify-between items-center text-sm font-extrabold text-slate-900">
+                  <span>Total Amount Payable</span>
+                  <span className="text-xl font-mono text-emerald-700">₹{cartTotal}</span>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => {
+                  setIsCartModalOpen(false);
+                  setActiveTab("dispatch");
+                  toast.success("Proceeding to Hyperlocal Pharmacy Hub Dispatch!");
+                }}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-5 rounded-xl text-sm shadow-md flex items-center justify-center gap-2"
+              >
+                <span>Proceed to Pharmacy Sourcing</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
