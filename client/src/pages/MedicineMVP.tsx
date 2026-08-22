@@ -2421,11 +2421,11 @@ export default function MedicineMVP() {
 
       {/* QUICKMED SHOPPING CART MODAL */}
       <Dialog open={isCartModalOpen} onOpenChange={setIsCartModalOpen}>
-        <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto bg-white text-slate-900 border-slate-200 rounded-2xl sm:rounded-3xl p-6 shadow-2xl">
+        <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white text-slate-900 border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl">
           <DialogHeader className="border-b border-slate-100 pb-4 space-y-1">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-emerald-600 rounded-xl text-white shadow-md shadow-emerald-600/20">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 bg-emerald-600 rounded-2xl text-white shadow-md shadow-emerald-600/20">
                   <ShoppingCart className="w-5 h-5" />
                 </div>
                 <div>
@@ -2437,7 +2437,7 @@ export default function MedicineMVP() {
                   </DialogDescription>
                 </div>
               </div>
-              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 font-bold">
+              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 font-bold px-3 py-1 text-xs">
                 {cartCount} Items
               </Badge>
             </div>
@@ -2454,50 +2454,50 @@ export default function MedicineMVP() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 pt-3">
               {/* Itemized Cart List */}
-              <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
                 {cartItems.map((item) => (
                   <div
                     key={item.id}
-                    className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3"
+                    className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
                   >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h5 className="font-bold text-slate-900 text-xs sm:text-sm truncate">{item.name}</h5>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h5 className="font-bold text-slate-900 text-sm">{item.name}</h5>
                         {item.requiresColdChain && (
-                          <Badge variant="outline" className="border-cyan-300 text-cyan-800 bg-cyan-50 text-[9px] shrink-0">
-                            ❄️ 2°C–8°C
+                          <Badge variant="outline" className="border-cyan-300 text-cyan-800 bg-cyan-50 text-[10px] shrink-0 font-semibold">
+                            ❄️ 2°C–8°C Cold Storage
                           </Badge>
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-500 truncate mt-0.5">{item.genericName}</p>
-                      <span className="text-xs font-extrabold text-emerald-700 mt-1 block">₹{item.price} each</span>
+                      <p className="text-xs text-slate-500">{item.genericName}</p>
+                      <span className="text-xs font-extrabold text-emerald-700 block">₹{item.price} per unit</span>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-200">
                       {/* Quantity Controls */}
-                      <div className="flex items-center gap-1 bg-white border border-slate-300 rounded-lg p-0.5 shadow-2xs">
+                      <div className="flex items-center gap-1.5 bg-white border border-slate-300 rounded-xl p-1 shadow-2xs">
                         <button
                           type="button"
                           onClick={() => updateCartQuantity(item.id, -1)}
-                          className="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded font-bold flex items-center justify-center text-xs"
+                          className="w-7 h-7 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold flex items-center justify-center text-xs transition-colors"
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-3.5 h-3.5" />
                         </button>
-                        <span className="w-6 text-center font-mono font-extrabold text-xs text-slate-900">
+                        <span className="w-8 text-center font-mono font-extrabold text-sm text-slate-900">
                           {item.quantity}
                         </span>
                         <button
                           type="button"
                           onClick={() => updateCartQuantity(item.id, 1)}
-                          className="w-6 h-6 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded font-bold flex items-center justify-center text-xs"
+                          className="w-7 h-7 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold flex items-center justify-center text-xs transition-colors"
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
 
-                      <span className="font-mono font-bold text-slate-900 text-sm w-16 text-right">
+                      <span className="font-mono font-extrabold text-slate-900 text-base min-w-[70px] text-right">
                         ₹{item.price * item.quantity}
                       </span>
 
@@ -2505,10 +2505,10 @@ export default function MedicineMVP() {
                         size="icon"
                         variant="ghost"
                         onClick={() => removeFromCart(item.id)}
-                        className="h-7 w-7 text-rose-500 hover:bg-rose-50 rounded-lg"
+                        className="h-8 w-8 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
                         title="Remove item"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
