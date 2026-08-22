@@ -668,21 +668,20 @@ export default function MedicineMVP() {
                 {/* Prescription Input Column */}
                 <div className="lg:col-span-5 space-y-6" id="prescription-upload">
                   <Card className="bg-white border-slate-200 text-slate-900 shadow-md" id="rx-scanner">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-emerald-700">
-                        <Upload className="w-5 h-5" /> Select / Upload Prescription
-                      </CardTitle>
-                      <CardDescription className="text-slate-600">
-                        Upload your doctor's prescription image or PDF, or pick a sample preset to scan via AI OCR.
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center gap-2 text-emerald-700 text-base">
+                          <Sparkles className="w-5 h-5 text-emerald-600" /> AI Vision Prescription Scanner
+                        </CardTitle>
+                        <Badge className="bg-emerald-600 text-white text-[10px] uppercase font-bold">
+                          🟢 LIVE API
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-slate-600 text-xs mt-1">
+                        Upload your doctor's prescription photo or PDF, or pick a preset sample for instant AI OCR scanning.
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {/* Real Gemini Vision Prescription Uploader */}
-                      <PrescriptionUploader />
-
-                      <div className="pt-2 flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Or Select Preset Sample</span>
-                      </div>
                       <input
                         type="file"
                         ref={fileInputRef}
@@ -695,33 +694,7 @@ export default function MedicineMVP() {
                         }}
                       />
 
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          onClick={() => runOcrScan("diabetes")}
-                          className={`p-4 rounded-xl border text-left transition-all ${selectedPreset === "diabetes"
-                              ? "border-emerald-500 bg-emerald-50 text-slate-900 shadow-xs"
-                              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
-                            }`}
-                        >
-                          <span className="text-xs text-emerald-700 font-bold uppercase tracking-wider block mb-1">Rx Sample 1</span>
-                          <span className="font-semibold block text-sm">Insulin & Diabetes Care</span>
-                          <span className="text-xs text-slate-500 mt-1 block">Cold-chain flagged</span>
-                        </button>
-
-                        <button
-                          onClick={() => runOcrScan("infection")}
-                          className={`p-4 rounded-xl border text-left transition-all ${selectedPreset === "infection"
-                              ? "border-emerald-500 bg-emerald-50 text-slate-900 shadow-xs"
-                              : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
-                            }`}
-                        >
-                          <span className="text-xs text-cyan-700 font-bold uppercase tracking-wider block mb-1">Rx Sample 2</span>
-                          <span className="font-semibold block text-sm">Antibiotic & Fever Course</span>
-                          <span className="text-xs text-slate-500 mt-1 block">Regulated Dosage</span>
-                        </button>
-                      </div>
-
-                      {/* Custom Upload Dropzone Box */}
+                      {/* Single Required Prescription Upload Dropzone */}
                       <div
                         onClick={() => fileInputRef.current?.click()}
                         onDragOver={(e) => {
@@ -736,16 +709,19 @@ export default function MedicineMVP() {
                             processFileUpload(e.dataTransfer.files[0]);
                           }
                         }}
-                        className={`border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer ${selectedPreset === "custom" || isDragging
+                        className={`border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
+                          selectedPreset === "custom" || isDragging
                             ? "border-emerald-500 bg-emerald-50/80 scale-[1.01]"
-                            : "border-slate-300 hover:border-emerald-500 bg-slate-50 hover:bg-emerald-50/40"
-                          }`}
+                            : "border-emerald-300 hover:border-emerald-500 bg-emerald-50/30 hover:bg-emerald-50/60"
+                        }`}
                       >
-                        <FileText className={`w-8 h-8 mx-auto mb-2 ${isDragging || selectedPreset === "custom" ? "text-emerald-600 animate-bounce" : "text-slate-400"}`} />
-                        <p className="text-sm font-medium text-slate-800">
-                          {uploadedFile ? `Uploaded: ${uploadedFile.name}` : "Drop prescription image or PDF here"}
+                        <div className="w-12 h-12 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700 mx-auto mb-2">
+                          <Upload className="w-6 h-6" />
+                        </div>
+                        <p className="text-sm font-bold text-slate-800">
+                          {uploadedFile ? `Uploaded: ${uploadedFile.name}` : "Click to select Doctor Prescription Photo / PDF"}
                         </p>
-                        <p className="text-xs text-slate-500 mt-1">Supports Local File, Live Camera, Google Drive & iCloud</p>
+                        <p className="text-xs text-slate-500 mt-1">Supports JPG, PNG, WEBP, PDF (Max 10MB)</p>
 
                         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                           <Button
@@ -789,6 +765,37 @@ export default function MedicineMVP() {
                         </div>
                       </div>
 
+                      {/* Preset Samples */}
+                      <div className="pt-1 space-y-2">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Or Select Preset Sample for Demo</span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            onClick={() => runOcrScan("diabetes")}
+                            className={`p-3 rounded-xl border text-left transition-all ${
+                              selectedPreset === "diabetes"
+                                ? "border-emerald-500 bg-emerald-50 text-slate-900 shadow-xs"
+                                : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
+                            }`}
+                          >
+                            <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block mb-0.5">Rx Sample 1</span>
+                            <span className="font-semibold block text-xs">Insulin & Diabetes Care</span>
+                            <span className="text-[11px] text-slate-500 block">Cold-chain flagged</span>
+                          </button>
+
+                          <button
+                            onClick={() => runOcrScan("infection")}
+                            className={`p-3 rounded-xl border text-left transition-all ${
+                              selectedPreset === "infection"
+                                ? "border-emerald-500 bg-emerald-50 text-slate-900 shadow-xs"
+                                : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
+                            }`}
+                          >
+                            <span className="text-[10px] text-cyan-700 font-bold uppercase tracking-wider block mb-0.5">Rx Sample 2</span>
+                            <span className="font-semibold block text-xs">Antibiotic & Fever Course</span>
+                            <span className="text-[11px] text-slate-500 block">Regulated Dosage</span>
+                          </button>
+                        </div>
+                      </div>
 
                       {/* OCR Scanner Simulation View */}
                       {isScanning && (
