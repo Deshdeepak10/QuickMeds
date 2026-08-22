@@ -1374,35 +1374,47 @@ export default function MedicineMVP() {
                         <Lock className="w-5 h-5 text-amber-600" /> Secure OTP Delivery Handshake
                       </CardTitle>
                       <CardDescription className="text-slate-600 text-xs">
-                        Prescription orders require 4-digit PIN verification upon rider arrival.
+                        {user.role === "patient"
+                          ? "Show or read this 4-digit PIN to your delivery rider upon package arrival."
+                          : "Ask the customer for their 4-digit Delivery OTP to confirm medicine handover."}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-center space-y-2">
-                        <span className="text-xs text-amber-800 font-semibold block uppercase tracking-wider">Your Delivery OTP</span>
-                        <span className="text-3xl font-mono font-extrabold text-amber-700 tracking-widest block">4829</span>
-                        <p className="text-[11px] text-slate-500">Share this code only with your delivery agent</p>
-                      </div>
-
-                      {/* Simulate Handover */}
-                      <div className="space-y-3">
-                        <label className="text-xs font-semibold text-slate-700">Simulate Rider Entry (Enter 4829)</label>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Enter 4-digit OTP"
-                            value={enteredOtp}
-                            onChange={(e) => setEnteredOtp(e.target.value)}
-                            maxLength={4}
-                            className="bg-slate-50 border-slate-300 text-center font-mono text-lg text-slate-900"
-                          />
-                          <Button
-                            onClick={handleVerifyOtp}
-                            className="bg-emerald-600 text-white hover:bg-emerald-700 font-bold px-6 shadow-sm"
-                          >
-                            Verify
-                          </Button>
+                    <CardContent className="space-y-4">
+                      {/* Patient OTP Display (Patient view) */}
+                      {user.role === "patient" ? (
+                        <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl text-center space-y-2">
+                          <span className="text-xs text-amber-800 font-extrabold block uppercase tracking-wider">Your Delivery PIN / OTP</span>
+                          <span className="text-4xl font-mono font-extrabold text-amber-700 tracking-widest block">4829</span>
+                          <p className="text-xs text-slate-600 pt-1 font-medium">
+                            Give this code to rider <strong>Vikram Singh</strong> when receiving your medicine box.
+                          </p>
                         </div>
-                      </div>
+                      ) : (
+                        /* Rider OTP Entry Form (Rider view) */
+                        <div className="space-y-3">
+                          <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl text-center">
+                            <span className="text-xs text-amber-800 font-bold uppercase tracking-wider block mb-1">Customer Delivery OTP</span>
+                            <span className="text-2xl font-mono font-extrabold text-amber-700 tracking-widest block">4829</span>
+                          </div>
+
+                          <label className="text-xs font-bold text-slate-700 block">Rider Handover Verification (Enter 4-digit OTP)</label>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Enter 4-digit OTP"
+                              value={enteredOtp}
+                              onChange={(e) => setEnteredOtp(e.target.value)}
+                              maxLength={4}
+                              className="bg-slate-50 border-slate-300 text-center font-mono text-lg text-slate-900 font-bold"
+                            />
+                            <Button
+                              onClick={handleVerifyOtp}
+                              className="bg-emerald-600 text-white hover:bg-emerald-700 font-bold px-6 shadow-sm whitespace-nowrap text-xs"
+                            >
+                              Verify & Handover
+                            </Button>
+                          </div>
+                        </div>
+                      )}
 
                       {isDelivered && (
                         <div className="p-4 bg-emerald-100 border border-emerald-300 rounded-xl text-emerald-900 text-xs font-semibold flex items-center gap-3">
@@ -1430,7 +1442,6 @@ export default function MedicineMVP() {
                       <div className="p-3 bg-white/80 border border-rose-200 rounded-xl space-y-1.5">
                         <p className="font-bold text-slate-900">{selectedPharmacy.name}</p>
                         <p className="text-slate-600">On-Duty Pharmacist: <strong className="text-slate-900">{selectedPharmacy.pharmacistOnDuty}</strong></p>
-
                         <p className="text-slate-600">Store Direct Line: <strong className="text-rose-700 font-mono text-sm">{selectedPharmacy.phone || "+91 98765 43210"}</strong></p>
                       </div>
 
@@ -1441,7 +1452,7 @@ export default function MedicineMVP() {
                         <PhoneCall className="w-4 h-4 text-white" /> Call Medical Store Directly
                       </a>
 
-                      <p className="text-[10px] text-slate-500 text-center italic">
+                      <p className="text-[11px] text-slate-600 text-center leading-relaxed pt-1 font-medium">
                         Standard Delivery: 3 Hours Minimum. Emergency Express Hotline is available for urgent medicine dispatch coordination (+₹150 priority surcharge applies for instant courier dispatch).
                       </p>
                     </CardContent>

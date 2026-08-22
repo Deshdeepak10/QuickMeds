@@ -222,8 +222,8 @@ export function MapView({
         <div ref={mapContainer} className="w-full h-full" />
       )}
 
-      {/* Top Map HUD Bar with Geolocation Button */}
-      <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+      {/* Top Map HUD Bar with Geolocation Button (Top-Left Flex Row) */}
+      <div className="absolute top-3 left-3 flex flex-wrap items-center gap-2 pointer-events-none z-10">
         <div className="bg-slate-950/90 border border-slate-800 text-white text-xs px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-lg backdrop-blur-md pointer-events-auto">
           <Navigation className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
           <span>{locationName ? `📍 ${locationName}` : "Google Live GPS Map"}</span>
