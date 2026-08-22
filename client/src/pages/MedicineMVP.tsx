@@ -630,19 +630,21 @@ export default function MedicineMVP() {
               </div>
             </div>
 
-            {/* Cart Option */}
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-emerald-500/40 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold text-xs px-3 py-1.5 flex items-center gap-1.5 shadow-xs"
-              onClick={() => setIsCartModalOpen(true)}
-            >
-              <ShoppingCart className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Cart</span>
-              <Badge className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ml-0.5">
-                {cartCount}
-              </Badge>
-            </Button>
+            {/* Cart Option - Only visible for Patient role */}
+            {user.role === "patient" && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-emerald-500/40 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 font-bold text-xs px-3 py-1.5 flex items-center gap-1.5 shadow-xs"
+                onClick={() => setIsCartModalOpen(true)}
+              >
+                <ShoppingCart className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Cart</span>
+                <Badge className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ml-0.5">
+                  {cartCount}
+                </Badge>
+              </Button>
+            )}
 
             <Button
               size="sm"
