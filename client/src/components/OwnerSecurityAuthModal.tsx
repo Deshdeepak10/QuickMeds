@@ -77,7 +77,7 @@ export function OwnerSecurityAuthModal() {
 
   return (
     <Dialog open={isOwnerAuthModalOpen} onOpenChange={setIsOwnerAuthModalOpen}>
-      <DialogContent showCloseButton={false} className="sm:max-w-lg bg-slate-950 border-purple-500/40 text-white shadow-2xl shadow-purple-900/30 rounded-3xl p-0 overflow-hidden backdrop-blur-2xl">
+      <DialogContent showCloseButton={false} className="w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto bg-slate-950 border-purple-500/40 text-white shadow-2xl shadow-purple-900/30 rounded-2xl sm:rounded-3xl p-0 backdrop-blur-2xl">
         {/* Sleek High-Tech Header Banner */}
         <div className="p-6 bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-950 border-b border-purple-800/40 relative">
           <div className="flex items-center justify-between">

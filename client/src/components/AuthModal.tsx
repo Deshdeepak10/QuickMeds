@@ -193,34 +193,34 @@ export function AuthModal() {
 
   return (
     <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
-      <DialogContent className="sm:max-w-xl bg-white border-slate-200 text-slate-900 shadow-2xl rounded-3xl p-0 overflow-hidden">
+      <DialogContent className="w-[95vw] sm:max-w-xl max-h-[90vh] overflow-y-auto bg-white border-slate-200 text-slate-900 shadow-2xl rounded-2xl sm:rounded-3xl p-0">
         {/* Modal Top Header */}
-        <div className={`${header.gradient} p-6 text-white`}>
-          <div className="flex items-center justify-between">
+        <div className={`${header.gradient} p-4 sm:p-6 text-white`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 text-white">
+              <div className="p-2 sm:p-2.5 bg-white/20 backdrop-blur-md rounded-2xl border border-white/30 text-white shrink-0">
                 {header.icon}
               </div>
               <div>
-                <DialogTitle className="text-xl font-extrabold text-white">
+                <DialogTitle className="text-base sm:text-xl font-extrabold text-white leading-tight">
                   {header.title}
                 </DialogTitle>
-                <DialogDescription className="text-white/90 text-xs mt-0.5 font-medium">
+                <DialogDescription className="text-white/90 text-[11px] sm:text-xs mt-0.5 font-medium">
                   {header.description}
                 </DialogDescription>
               </div>
             </div>
-            <Badge className="bg-white/20 text-white border-white/30 uppercase text-[10px] font-bold">
+            <Badge className="bg-white/20 text-white border-white/30 uppercase text-[10px] font-bold self-start sm:self-auto shrink-0">
               {header.badge}
             </Badge>
           </div>
         </div>
 
         {/* Modal Content for Selected Role */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {activeRole === "patient" && (
             <div className="space-y-4">
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between">
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h4 className="font-extrabold text-sm text-emerald-900 flex items-center gap-1.5">
                     👩‍💼 Patient / Healthcare Consumer Account
@@ -236,7 +236,7 @@ export function AuthModal() {
                     setIsAuthModalOpen(false);
                     setLocation("/app");
                   }}
-                  className="border-emerald-400 text-emerald-800 hover:bg-emerald-100 font-bold text-xs whitespace-nowrap"
+                  className="border-emerald-400 text-emerald-800 hover:bg-emerald-100 font-bold text-xs whitespace-nowrap shrink-0 w-full sm:w-auto"
                 >
                   Quick Demo Sign In
                 </Button>
@@ -303,7 +303,7 @@ export function AuthModal() {
           {/* ROLE 2: INDIVIDUAL PHARMACY SHOP LOGIN FORM */}
           {activeRole === "pharmacy" && (
             <div className="space-y-4">
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between">
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h4 className="font-extrabold text-sm text-amber-900 flex items-center gap-1.5">
                     🏥 Licensed Pharmacy Store Partner
@@ -319,7 +319,7 @@ export function AuthModal() {
                     setIsAuthModalOpen(false);
                     setLocation("/app");
                   }}
-                  className="border-amber-400 text-amber-900 hover:bg-amber-100 font-bold text-xs whitespace-nowrap"
+                  className="border-amber-400 text-amber-900 hover:bg-amber-100 font-bold text-xs whitespace-nowrap shrink-0 w-full sm:w-auto"
                 >
                   Quick Demo Sign In
                 </Button>
@@ -381,9 +381,9 @@ export function AuthModal() {
                     id="coldChainCheck"
                     checked={pharmacyData.coldChainVerified}
                     onChange={(e) => setPharmacyData({ ...pharmacyData, coldChainVerified: e.target.checked })}
-                    className="w-4 h-4 text-emerald-600 rounded"
+                    className="w-4 h-4 text-emerald-600 rounded shrink-0"
                   />
-                  <label htmlFor="coldChainCheck" className="text-slate-700 font-semibold cursor-pointer">
+                  <label htmlFor="coldChainCheck" className="text-slate-700 font-semibold cursor-pointer leading-tight">
                     Verify CDSCO Cold Storage Unit (2°C–8°C Insulated Storage Available)
                   </label>
                 </div>
@@ -398,7 +398,7 @@ export function AuthModal() {
           {/* ROLE 3: INDIVIDUAL RIDER COURIER LOGIN FORM */}
           {activeRole === "rider" && (
             <div className="space-y-4">
-              <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-2xl flex items-center justify-between">
+              <div className="p-4 bg-cyan-50 border border-cyan-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h4 className="font-extrabold text-sm text-cyan-900 flex items-center gap-1.5">
                     🏍️ Express Delivery Rider Courier Partner
@@ -414,7 +414,7 @@ export function AuthModal() {
                     setIsAuthModalOpen(false);
                     setLocation("/app");
                   }}
-                  className="border-cyan-400 text-cyan-900 hover:bg-cyan-100 font-bold text-xs whitespace-nowrap"
+                  className="border-cyan-400 text-cyan-900 hover:bg-cyan-100 font-bold text-xs whitespace-nowrap shrink-0 w-full sm:w-auto"
                 >
                   Quick Demo Sign In
                 </Button>

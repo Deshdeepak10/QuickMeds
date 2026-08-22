@@ -59,7 +59,7 @@ export function PhoneSignupModal() {
 
   return (
     <Dialog open={isPhoneSignupModalOpen} onOpenChange={setIsPhoneSignupModalOpen}>
-      <DialogContent className="sm:max-w-md bg-white border-slate-200 text-slate-900 shadow-2xl rounded-2xl p-6">
+      <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto bg-white border-slate-200 text-slate-900 shadow-2xl rounded-2xl p-4 sm:p-6">
         <DialogHeader className="space-y-2">
           <div className="flex items-center gap-2">
             <div className="p-2.5 bg-emerald-600 rounded-xl text-white shadow-md shadow-emerald-600/20">

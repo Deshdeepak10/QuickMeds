@@ -42,17 +42,17 @@ export default function LoginHome() {
 
 
       {/* Main Content */}
-      <main className="py-12 flex-1 flex items-center">
+      <main className="py-8 sm:py-12 flex-1 flex items-center">
         <div className="container mx-auto px-4 max-w-6xl">
           {/* Hero Section */}
-          <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 space-y-3">
             <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 px-3 py-1 text-xs uppercase font-bold tracking-wider">
               Select Login Role
             </Badge>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
               Welcome to QuickMed <span className="text-emerald-600">Medicine Platform</span>
             </h2>
-            <p className="text-base text-slate-600">
+            <p className="text-sm sm:text-base text-slate-600">
               Choose your role below to enter the live interactive portal tailored for Patients, Licensed Pharmacy Partners, or Express Delivery Riders.
             </p>
           </div>
