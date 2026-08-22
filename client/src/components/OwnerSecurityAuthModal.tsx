@@ -50,18 +50,18 @@ export function OwnerSecurityAuthModal() {
 
   return (
     <Dialog open={isOwnerAuthModalOpen} onOpenChange={setIsOwnerAuthModalOpen}>
-      <DialogContent showCloseButton={false} className="w-[92vw] sm:max-w-md bg-slate-950 border-purple-500/40 text-white shadow-2xl rounded-2xl sm:rounded-3xl p-6 backdrop-blur-2xl">
-        <DialogHeader className="border-b border-purple-900/40 pb-4">
+      <DialogContent showCloseButton={false} className="w-[92vw] sm:max-w-md bg-white border-slate-200 text-slate-900 shadow-2xl rounded-2xl sm:rounded-3xl p-6">
+        <DialogHeader className="border-b border-slate-100 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-purple-900/50 rounded-xl border border-purple-400/40 text-purple-300">
-                <Lock className="w-5 h-5 text-purple-300" />
+              <div className="p-2.5 bg-purple-100 rounded-xl border border-purple-200 text-purple-700 shadow-xs">
+                <Lock className="w-5 h-5 text-purple-700" />
               </div>
               <div>
-                <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+                <DialogTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   👑 App Owner Access
                 </DialogTitle>
-                <DialogDescription className="text-purple-300/80 text-xs mt-0.5">
+                <DialogDescription className="text-slate-500 text-xs mt-0.5">
                   Enter master PIN to unlock owner admin controls
                 </DialogDescription>
               </div>
@@ -71,7 +71,7 @@ export function OwnerSecurityAuthModal() {
               size="icon"
               variant="ghost"
               onClick={() => setIsOwnerAuthModalOpen(false)}
-              className="h-8 w-8 text-purple-300/70 hover:text-white rounded-lg hover:bg-purple-900/50"
+              className="h-8 w-8 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -80,11 +80,11 @@ export function OwnerSecurityAuthModal() {
 
         <form onSubmit={handleAuthenticateOwner} className="space-y-4 pt-4">
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-200">
-              <Label htmlFor="masterPin" className="text-xs font-bold text-slate-200">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-800">
+              <Label htmlFor="masterPin" className="text-xs font-bold text-slate-800">
                 Master Security PIN
               </Label>
-              <Badge variant="outline" className="text-[10px] border-purple-500/50 text-purple-300 font-mono bg-purple-950/50">
+              <Badge variant="outline" className="text-[10px] border-purple-300 text-purple-800 font-mono bg-purple-50">
                 Default: 779922
               </Badge>
             </div>
@@ -96,7 +96,7 @@ export function OwnerSecurityAuthModal() {
               value={masterPin}
               onChange={(e) => setMasterPin(e.target.value)}
               placeholder="Enter 6-digit PIN"
-              className="bg-slate-900 border-purple-800/60 text-white font-mono text-center tracking-[0.4em] text-lg h-12 focus:border-purple-400 rounded-xl"
+              className="bg-slate-50 border-slate-300 text-slate-900 font-mono text-center tracking-[0.4em] text-lg h-12 focus:border-purple-600 focus:bg-white rounded-xl"
               required
             />
           </div>
@@ -104,7 +104,7 @@ export function OwnerSecurityAuthModal() {
           <div className="pt-2 space-y-2">
             <Button
               type="submit"
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-purple-950/60"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-5 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md shadow-purple-600/20"
             >
               <Lock className="w-4 h-4" /> Enter App Owner Portal <ArrowRight className="w-4 h-4" />
             </Button>
@@ -113,7 +113,7 @@ export function OwnerSecurityAuthModal() {
               type="button"
               variant="ghost"
               onClick={() => setIsOwnerAuthModalOpen(false)}
-              className="w-full text-slate-400 hover:text-white text-xs h-9"
+              className="w-full text-slate-500 hover:text-slate-900 text-xs h-9"
             >
               Cancel
             </Button>
