@@ -1072,14 +1072,16 @@ export default function MedicineMVP() {
                         The routing engine automatically checks inventory levels, cold storage compliance, and rider proximity.
                       </p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setIsPharmacyRegisterModalOpen(true)}
-                      className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-bold text-xs"
-                    >
-                      + Register Pharmacy
-                    </Button>
+                    {user.role !== "patient" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setIsPharmacyRegisterModalOpen(true)}
+                        className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-bold text-xs"
+                      >
+                        + Register Pharmacy
+                      </Button>
+                    )}
                   </div>
 
                   <div className="space-y-4">
@@ -1133,7 +1135,7 @@ export default function MedicineMVP() {
                             </div>
                           </div>
 
-                          {isPending && (
+                          {isPending && (user.role === "admin" || user.role === "pharmacy") && (
                             <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg flex flex-wrap items-center justify-between gap-2 text-xs">
                               <span className="text-amber-800 font-medium flex items-center gap-1.5">
                                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" /> Drug license verification pending CDSCO inspection.
