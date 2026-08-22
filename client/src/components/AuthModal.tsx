@@ -101,7 +101,8 @@ export function AuthModal() {
       category: pharmacyData.category,
       address: pharmacyData.address,
       phone: pharmacyData.phone,
-      email: pharmacyData.email
+      email: pharmacyData.email,
+      coldChainReady: pharmacyData.coldChainVerified
     });
 
     if (!result.success) {

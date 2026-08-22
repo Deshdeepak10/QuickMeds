@@ -135,7 +135,7 @@ export const PharmacyRegisterSchema = z.object({
     .trim()
     .email("Invalid email address format")
     .max(255, "Email cannot exceed 255 characters"),
-  coldChainReady: z.boolean(),
+  coldChainReady: z.boolean().optional().default(true),
 });
 
 
