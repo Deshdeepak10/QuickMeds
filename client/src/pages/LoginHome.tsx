@@ -1,51 +1,23 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useAuth, UserRole, PRESET_USERS } from "@/contexts/AuthContext";
+import { useAuth, UserRole } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Pill,
-  User,
-  Building2,
-  Bike,
   ShieldCheck,
   ArrowRight,
-  Sparkles,
   Lock,
-  Thermometer,
-  FileText,
-  KeyRound,
   CheckCircle2
 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LoginHome() {
   const [, setLocation] = useLocation();
-  const { loginAsRole, loginWithCustom, setIsAuthModalOpen, setIsOwnerAuthModalOpen, setIsPharmacyRegisterModalOpen, setIsPhoneSignupModalOpen, setPhoneSignupRole } = useAuth();
+  const { loginAsRole, setIsAuthModalOpen, setIsOwnerAuthModalOpen, setIsPharmacyRegisterModalOpen, setIsPhoneSignupModalOpen, setPhoneSignupRole } = useAuth();
   
-  const [selectedRole, setSelectedRole] = useState<UserRole>("patient");
-  const [customName, setCustomName] = useState("");
-  const [customEmail, setCustomEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleRoleSelect = (role: UserRole) => {
-    loginAsRole(role);
-    toast.success(`Welcome back! Logged in as ${role.toUpperCase()}`);
-    setLocation("/app");
-  };
-
-  const handleCustomLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customName || !customEmail) {
-      toast.error("Please enter your name and email / license ID");
-      return;
-    }
-    loginWithCustom(customName, selectedRole, customEmail);
-    toast.success(`Signed in as ${customName} (${selectedRole.toUpperCase()})`);
-    setLocation("/app");
-  };
+  const [, setSelectedRole] = useState<UserRole>("patient");
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between">
@@ -88,7 +60,7 @@ export default function LoginHome() {
           </div>
 
           {/* 3 Role Selection Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
+          <div className="grid md:grid-cols-3 gap-8">
             {/* Card 1: Patient */}
             <Card className="bg-white border-slate-200 hover:border-emerald-500 transition-all shadow-md hover:shadow-xl rounded-2xl flex flex-col justify-between overflow-hidden group">
               <div className="p-6 space-y-4">
@@ -260,88 +232,6 @@ export default function LoginHome() {
               </div>
             </Card>
           </div>
-
-          {/* Custom Credentials Form Card */}
-          <Card className="bg-white border-slate-200 max-w-xl mx-auto shadow-lg rounded-2xl p-6">
-            <CardHeader className="p-0 mb-4">
-              <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
-                <KeyRound className="w-5 h-5 text-emerald-600" /> Account Sign In with Credentials
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-600">
-                Log in with your existing account email or registered store/rider ID.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <form onSubmit={handleCustomLogin} className="space-y-4">
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRole("patient")}
-                    className={`py-2 px-3 rounded-lg border text-xs font-bold transition-all ${
-                      selectedRole === "patient" ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    Patient
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRole("pharmacy")}
-                    className={`py-2 px-3 rounded-lg border text-xs font-bold transition-all ${
-                      selectedRole === "pharmacy" ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    Pharmacy
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRole("rider")}
-                    className={`py-2 px-3 rounded-lg border text-xs font-bold transition-all ${
-                      selectedRole === "rider" ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600 hover:bg-slate-50"
-                    }`}
-                  >
-                    Rider
-                  </button>
-                </div>
-
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-700 block mb-1">Full Name / Store Name</label>
-                    <Input
-                      placeholder="e.g. Sarah Chen"
-                      value={customName}
-                      onChange={(e) => setCustomName(e.target.value)}
-                      className="bg-slate-50 border-slate-300 text-slate-900 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-slate-700 block mb-1">Email / License ID</label>
-                    <Input
-                      type="email"
-                      placeholder="e.g. sarah@example.com"
-                      value={customEmail}
-                      onChange={(e) => setCustomEmail(e.target.value)}
-                      className="bg-slate-50 border-slate-300 text-slate-900 text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1">Password</label>
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="bg-slate-50 border-slate-300 text-slate-900 text-sm"
-                  />
-                </div>
-
-                <Button type="submit" className="w-full bg-slate-900 text-white hover:bg-slate-800 font-bold py-5">
-                  Sign In to {selectedRole.toUpperCase()} Account
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
         </div>
       </main>
 
