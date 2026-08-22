@@ -568,16 +568,6 @@ export default function MedicineMVP() {
             >
               Log Out
             </Button>
-            <Button
-              size="sm"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-xs text-xs px-3 py-1.5"
-              onClick={() => {
-                setAuthModalRole(user.role);
-                setIsAuthModalOpen(true);
-              }}
-            >
-              Switch Role
-            </Button>
 
 
             {/* Separate App Owner Security Login Icon - Only visible for Admin */}
