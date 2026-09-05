@@ -97,7 +97,7 @@ export function MapView({
           fullscreenControl: true,
           zoomControl: true,
           streetViewControl: true,
-          mapId: "QUICKMED_MAP_ID",
+          mapId: "AROGYASWIFT_MAP_ID",
         });
 
         // Add Pharmacy Pickup Marker
@@ -124,7 +124,7 @@ export function MapView({
         new window.google.maps.Marker({
           position: riderLocation,
           map: map.current,
-          title: "QuickMed Delivery Rider",
+          title: "ArogyaSwift Delivery Rider",
           icon: {
             url: "https://maps.google.com/mapfiles/ms/icons/motorcycling.png",
           },

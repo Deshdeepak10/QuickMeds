@@ -13,7 +13,7 @@ export function ProtectedRoute({ component: Component }: ProtectedRouteProps) {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      toast.error("🔒 Access Restricted: Please sign in or register first to enter QuickMed App.");
+      toast.error("🔒 Access Restricted: Please sign in or register first to enter ArogyaSwift App.");
       setLocation("/login");
     }
   }, [isAuthenticated, setLocation]);

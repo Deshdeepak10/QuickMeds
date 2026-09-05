@@ -1,4 +1,4 @@
-# 🎫 QuickMed — Future Ticket & Engineering Roadmap
+# 🎫 ArogyaSwift — Future Ticket & Engineering Roadmap
 
 **Document Version:** 1.0.0  
 **Project Status:** Active Production MVP  

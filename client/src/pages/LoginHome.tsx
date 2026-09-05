@@ -15,28 +15,63 @@ import { toast } from "sonner";
 
 export default function LoginHome() {
   const [, setLocation] = useLocation();
-  const { setAuthModalRole, setIsAuthModalOpen, setIsOwnerAuthModalOpen, setIsPharmacyRegisterModalOpen, setIsPhoneSignupModalOpen, setPhoneSignupRole } = useAuth();
+  const {
+    setAuthModalRole,
+    setIsAuthModalOpen,
+    setIsOwnerAuthModalOpen,
+    setIsPharmacyRegisterModalOpen,
+    setIsPhoneSignupModalOpen,
+    setPhoneSignupRole,
+    setIsDemoModalOpen,
+    openLegalPolicy,
+    setIsCookiePreferencesOpen,
+    setIsOnboardingOpen,
+    setIsHelpCenterOpen,
+    setIsAccountSettingsOpen
+  } = useAuth();
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between">
       {/* Top Header */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50 py-4">
-        <div className="container mx-auto px-4 flex items-center justify-between">
+      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50 py-3.5">
+        <div className="container mx-auto px-4 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-emerald-600 rounded-xl text-white shadow-md shadow-emerald-600/20">
               <Pill className="w-6 h-6" />
             </div>
             <div>
               <h1 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                QuickMed <span className="text-emerald-600">Portal Access</span>
+                ArogyaSwift <span className="text-emerald-600">Quick Delivery</span>
               </h1>
-              <p className="text-xs text-slate-500 font-medium">Licensed Hyperlocal Pharmacy Platform</p>
+              <p className="text-xs text-slate-500 font-medium">Hyperlocal Cold-Chain Medicine Network</p>
             </div>
           </div>
 
-          <Badge variant="outline" className="border-emerald-300 text-emerald-700 bg-emerald-50 px-3 py-1 font-medium hidden sm:inline-flex">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-600" /> Secure Multi-Role Portal
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsOnboardingOpen(true)}
+              className="text-xs h-8 border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold"
+            >
+              ⚡ How It Works
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsHelpCenterOpen(true)}
+              className="text-xs h-8 border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold"
+            >
+              Help & FAQs
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setIsDemoModalOpen(true)}
+              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs h-8 shadow-sm"
+            >
+              ⚡ Live Demo Simulator
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -50,7 +85,7 @@ export default function LoginHome() {
               Select Login Role
             </Badge>
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              Welcome to QuickMed <span className="text-emerald-600">Medicine Platform</span>
+              Welcome to ArogyaSwift <span className="text-emerald-600">Medicine Platform</span>
             </h2>
             <p className="text-sm sm:text-base text-slate-600">
               Choose your role below to enter the live interactive portal tailored for Patients, Licensed Pharmacy Partners, or Express Delivery Riders.
@@ -233,19 +268,153 @@ export default function LoginHome() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-        <div className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-2">
-          <span>QuickMed Licensed Medicine Delivery Platform • Compliant with Drugs and Cosmetics Act & Telemedicine Guidelines</span>
-          
-          <button
-            type="button"
-            onClick={() => setIsOwnerAuthModalOpen(true)}
-            className="text-[11px] text-slate-400 hover:text-purple-700 font-mono flex items-center gap-1 transition-colors"
-            title="Restricted Platform Owner Portal Access"
-          >
-            <Lock className="w-3 h-3 text-slate-400" /> Platform Owner Gate
-          </button>
+      {/* Comprehensive Legal, Compliance & Support Footer */}
+      <footer className="bg-slate-900 text-white border-t border-slate-800 pt-12 pb-8 text-xs">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 pb-10 border-b border-slate-800">
+            {/* Col 1: Brand */}
+            <div className="col-span-2 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-emerald-600 rounded-lg text-white">
+                  <Pill className="w-4 h-4" />
+                </div>
+                <span className="font-extrabold text-base text-white tracking-tight">ArogyaSwift</span>
+                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[9px]">
+                  Licensed Network
+                </Badge>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+                Next-generation hyperlocal pharmaceutical rapid fulfillment network. Sub-15 minute delivery of prescription medicines, cold-chain biologics (2°C–8°C), and dual-OTP custody verification.
+              </p>
+              <div className="pt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                <span>CDSCO Compliant</span> • <span>DPDP Act 2023</span> • <span>Drugs & Cosmetics Act 1940</span>
+              </div>
+            </div>
+
+            {/* Col 2: Legal & Governance */}
+            <div className="space-y-2.5">
+              <span className="font-bold text-slate-200 text-xs uppercase tracking-wider block">Legal & Governance</span>
+              <ul className="space-y-1.5 text-xs text-slate-400">
+                <li>
+                  <button onClick={() => openLegalPolicy("privacy")} className="hover:text-emerald-400 text-left transition-colors">
+                    Privacy Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("terms")} className="hover:text-emerald-400 text-left transition-colors">
+                    Terms of Service
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("dpa")} className="hover:text-emerald-400 text-left transition-colors">
+                    Data Processing Agreement (DPA)
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("acceptable-use")} className="hover:text-emerald-400 text-left transition-colors">
+                    Acceptable Use Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("disclaimer")} className="hover:text-emerald-400 text-left transition-colors">
+                    Medical Disclaimer
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("accessibility")} className="hover:text-emerald-400 text-left transition-colors">
+                    Accessibility Statement
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 3: Logistics & SLAs */}
+            <div className="space-y-2.5">
+              <span className="font-bold text-slate-200 text-xs uppercase tracking-wider block">Logistics & SLAs</span>
+              <ul className="space-y-1.5 text-xs text-slate-400">
+                <li>
+                  <button onClick={() => openLegalPolicy("shipping")} className="hover:text-emerald-400 text-left transition-colors">
+                    Shipping & Delivery Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("refund")} className="hover:text-emerald-400 text-left transition-colors">
+                    100% Refund Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("cancellation")} className="hover:text-emerald-400 text-left transition-colors">
+                    Cancellation Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("return-exchange")} className="hover:text-emerald-400 text-left transition-colors">
+                    Return & Exchange Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("customer-lifecycle")} className="hover:text-emerald-400 text-left transition-colors">
+                    Customer Lifecycle Guide
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 4: Security & Support */}
+            <div className="space-y-2.5">
+              <span className="font-bold text-slate-200 text-xs uppercase tracking-wider block">Security & Help</span>
+              <ul className="space-y-1.5 text-xs text-slate-400">
+                <li>
+                  <button onClick={() => openLegalPolicy("security")} className="hover:text-emerald-400 text-left transition-colors">
+                    Security Policy & Architecture
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("responsible-disclosure")} className="hover:text-emerald-400 text-left transition-colors">
+                    Responsible Disclosure
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("cookie")} className="hover:text-emerald-400 text-left transition-colors">
+                    Cookie Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setIsCookiePreferencesOpen(true)} className="hover:text-emerald-400 text-left transition-colors font-semibold text-emerald-400">
+                    ⚙️ Cookie Preferences
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("community-guidelines")} className="hover:text-emerald-400 text-left transition-colors">
+                    Community Guidelines
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setIsHelpCenterOpen(true)} className="hover:text-emerald-400 text-left transition-colors font-semibold text-emerald-300">
+                    Help Center & FAQs
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Sub-Footer */}
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <div>
+              © 2026 ArogyaSwift Healthcare Technologies Inc. All rights reserved. Registered under Drugs and Cosmetics Act.
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => setIsOwnerAuthModalOpen(true)}
+                className="text-[11px] text-slate-400 hover:text-purple-400 font-mono flex items-center gap-1 transition-colors"
+                title="Restricted Platform Owner Portal Access"
+              >
+                <Lock className="w-3 h-3 text-slate-400" /> Platform Owner Gate
+              </button>
+            </div>
+          </div>
         </div>
       </footer>
 

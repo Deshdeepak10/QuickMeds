@@ -1,4 +1,4 @@
-# 🛠️ QuickMed — Technical Requirement Document (TRD)
+# 🛠️ ArogyaSwift — Technical Requirement Document (TRD)
 
 **Document Version:** 1.0.0  
 **Target Environment:** Node.js v18+, Express.js, Vite 7, Vercel Serverless Functions  
@@ -7,7 +7,7 @@
 
 ## 1. System Architecture Overview
 
-QuickMed is designed as a hybrid Single Page Application (SPA) with serverless micro-services and an Express backend layer.
+ArogyaSwift is designed as a hybrid Single Page Application (SPA) with serverless micro-services and an Express backend layer.
 
 ```
 +-------------------------------------------------------------------+
@@ -40,7 +40,7 @@ QuickMed is designed as a hybrid Single Page Application (SPA) with serverless m
 ### 2.1 Public Health & Status Endpoints
 - **GET `/api/public/health`**
   - **Limiter**: Public Limiter (Moderate rate limit).
-  - **Response**: `{ status: "ok", service: "QuickMed Platform", timestamp: ISOString }`
+  - **Response**: `{ status: "ok", service: "ArogyaSwift Platform", timestamp: ISOString }`
 
 ### 2.2 Authentication Endpoints
 - **POST `/api/auth/login`**

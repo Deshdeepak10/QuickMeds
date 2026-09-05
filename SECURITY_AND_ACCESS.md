@@ -1,4 +1,4 @@
-# 🛡️ QuickMed — Security & Access Control Document
+# 🛡️ ArogyaSwift — Security & Access Control Document
 
 **Document Version:** 1.0.0  
 **Compliance Standard:** CDSCO Pharmaceutical Storage Guidelines, Telemedicine Practice Guidelines of India, OWASP Top 10 Security Standards  
@@ -8,13 +8,13 @@
 
 ## 1. Executive Security Overview
 
-QuickMed operates at the intersection of emergency healthcare logistics, prescription fulfillment, and internet-of-things (IoT) cold-chain telemetry. Security and data privacy are foundational. This document details the security posture, authentication architecture, rate-limiting defenses, regulatory compliance controls, and AI safety mechanisms implemented across the platform.
+ArogyaSwift operates at the intersection of emergency healthcare logistics, prescription fulfillment, and internet-of-things (IoT) cold-chain telemetry. Security and data privacy are foundational. This document details the security posture, authentication architecture, rate-limiting defenses, regulatory compliance controls, and AI safety mechanisms implemented across the platform.
 
 ---
 
 ## 2. Multi-Role Authentication & Access Control (RBAC)
 
-QuickMed enforces strict Role-Based Access Control (RBAC) with four primary user personas:
+ArogyaSwift enforces strict Role-Based Access Control (RBAC) with four primary user personas:
 
 | User Role | Access Scope | Key Credentials & Verification | Primary Actions Authorized |
 | :--- | :--- | :--- | :--- |
@@ -33,7 +33,7 @@ QuickMed enforces strict Role-Based Access Control (RBAC) with four primary user
 
 ## 3. Threat Mitigation & Multi-Tier Rate Limiting
 
-To protect API endpoints against Brute Force, Denial of Service (DoS), Credential Stuffing, and API abuse, QuickMed uses an in-memory sliding-window rate limiter with **exponential backoff delay** (`server/middleware/rateLimiter.ts`).
+To protect API endpoints against Brute Force, Denial of Service (DoS), Credential Stuffing, and API abuse, ArogyaSwift uses an in-memory sliding-window rate limiter with **exponential backoff delay** (`server/middleware/rateLimiter.ts`).
 
 ### Rate Limiter Tiers
 
@@ -68,7 +68,7 @@ const backoffSeconds = Math.min(Math.pow(2, attempts - 1) * 2, 900); // Exponent
 
 ## 4. Input Sanitization & Payload Validation
 
-All payload structures sent to QuickMed API endpoints are strictly validated using **Zod Schemas** (`shared/schemas.ts`). Payload fields are stripped of illegal characters, validated against length bounds, and typed before reaching business handlers.
+All payload structures sent to ArogyaSwift API endpoints are strictly validated using **Zod Schemas** (`shared/schemas.ts`). Payload fields are stripped of illegal characters, validated against length bounds, and typed before reaching business handlers.
 
 ### Validated Endpoints & Constraints
 
@@ -91,7 +91,7 @@ All payload structures sent to QuickMed API endpoints are strictly validated usi
 
 ## 5. CDSCO Regulatory & Telemetry Data Security
 
-QuickMed complies with CDSCO cold-chain guidelines for temperature-sensitive pharmaceuticals (Insulin, Vaccines, Biologics):
+ArogyaSwift complies with CDSCO cold-chain guidelines for temperature-sensitive pharmaceuticals (Insulin, Vaccines, Biologics):
 
 1. **Cold-Chain Telemetry Integrity**:
    - Live IoT telemetry sensors continuously monitor insulated smart boxes.
@@ -112,7 +112,7 @@ The Multilingual AI Customer Help Agent (`/api/chat/agent`) enforces strict safe
 > **Emergency Room Triage Disclaimer**: The AI agent is strictly prohibited from diagnosing life-threatening medical conditions or prescribing prescription drugs.
 
 - **Emergency Detection**: If user queries contain keywords like `chest pain`, `heart attack`, `unconscious`, `heavy bleeding`, or `ambulance`, the system immediately bypasses general AI text generation and returns a critical alert advising the user to dial **112** or call an emergency ambulance.
-- **LLM Prompt Isolation**: System prompts provided to Google Gemini API explicitly constrain responses to QuickMed platform assistance, delivery status, prescription upload guides, and generic drug cost savings.
+- **LLM Prompt Isolation**: System prompts provided to Google Gemini API explicitly constrain responses to ArogyaSwift platform assistance, delivery status, prescription upload guides, and generic drug cost savings.
 - **Fallback Security**: If external LLM APIs fail or environment keys are unconfigured, the platform defaults to a pre-validated, locally isolated multilingual knowledge engine.
 
 ---

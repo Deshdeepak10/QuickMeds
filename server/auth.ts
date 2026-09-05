@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { Request, Response, NextFunction } from "express";
 
-const JWT_SECRET = process.env.JWT_SECRET || "quickmed-jwt-secret-key-2026";
+const JWT_SECRET = process.env.JWT_SECRET || "arogyaswift-jwt-secret-key-2026";
 
 export interface TokenPayload {
   userId: string;

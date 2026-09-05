@@ -102,6 +102,7 @@ temp/
 
 # Database
 *.db
+*.db*
 *.sqlite
 *.sqlite3
 

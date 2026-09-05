@@ -23,7 +23,10 @@ export function AuthModal() {
     authModalRole,
     loginAsRole,
     registerPharmacyStore,
-    registerUserWithPhone
+    registerUserWithPhone,
+    setIsEmailVerifyOpen,
+    setIsPasswordResetOpen,
+    openLegalPolicy
   } = useAuth();
 
   const activeRole = authModalRole || "patient";
@@ -54,7 +57,7 @@ export function AuthModal() {
   const [riderData, setRiderData] = useState({
     name: "Vikram Singh",
     phone: "9876599887",
-    email: "vikram.rider@quickmed.in",
+    email: "vikram.rider@arogyaswift.in",
     vehicleType: "EV Scooter (Cold Storage Box)",
     vehicleNo: "UP-14-EV-8821",
     location: "Ghaziabad Central Zone",
@@ -165,7 +168,7 @@ export function AuthModal() {
         return {
           gradient: "bg-gradient-to-r from-amber-700 via-amber-800 to-amber-900",
           icon: <Building2 className="w-6 h-6" />,
-          title: "QuickMed Pharmacy Authentication",
+          title: "ArogyaSwift Pharmacy Authentication",
           description: "Licensed Pharmacy Store Partner • Pharmacist Audit Portal",
           badge: "PHARMACY LOGIN"
         };
@@ -173,7 +176,7 @@ export function AuthModal() {
         return {
           gradient: "bg-gradient-to-r from-cyan-700 via-teal-800 to-cyan-900",
           icon: <Bike className="w-6 h-6" />,
-          title: "QuickMed Rider Authentication",
+          title: "ArogyaSwift Rider Authentication",
           description: "Express Delivery Partner • Cold-Chain Courier Portal",
           badge: "RIDER LOGIN"
         };
@@ -182,7 +185,7 @@ export function AuthModal() {
         return {
           gradient: "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800",
           icon: <User className="w-6 h-6" />,
-          title: "QuickMed Patient Authentication",
+          title: "ArogyaSwift Patient Authentication",
           description: "Licensed Hyperlocal Medicine Platform • Patient Access",
           badge: "PATIENT LOGIN"
         };
@@ -489,6 +492,61 @@ export function AuthModal() {
               </form>
             </div>
           )}
+
+          {/* Customer Lifecycle Quick Actions & Legal Footer */}
+          <div className="pt-4 border-t border-slate-100 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAuthModalOpen(false);
+                  setIsPasswordResetOpen(true);
+                }}
+                className="text-slate-500 hover:text-emerald-700 font-medium hover:underline"
+              >
+                Forgot password? <strong>Reset</strong>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAuthModalOpen(false);
+                  setIsEmailVerifyOpen(true);
+                }}
+                className="text-slate-500 hover:text-emerald-700 font-medium hover:underline"
+              >
+                Need to verify email? <strong>Enter Code</strong>
+              </button>
+            </div>
+
+            <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+              By authenticating, you agree to the ArogyaSwift{" "}
+              <button
+                type="button"
+                onClick={() => openLegalPolicy("terms")}
+                className="text-emerald-700 hover:underline font-semibold"
+              >
+                Terms of Service
+              </button>
+              {", "}
+              <button
+                type="button"
+                onClick={() => openLegalPolicy("privacy")}
+                className="text-emerald-700 hover:underline font-semibold"
+              >
+                Privacy Policy
+              </button>
+              {", and "}
+              <button
+                type="button"
+                onClick={() => openLegalPolicy("shipping")}
+                className="text-emerald-700 hover:underline font-semibold"
+              >
+                Hyperlocal Shipping SLAs
+              </button>
+              .
+            </p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

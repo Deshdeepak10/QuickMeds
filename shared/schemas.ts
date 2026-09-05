@@ -189,6 +189,7 @@ export const ChatAgentMessageSchema = z.object({
       orderId: z.string().optional(),
       location: z.string().optional(),
     })
+    .passthrough()
     .optional(),
   conversationHistory: z
     .array(
@@ -214,6 +215,64 @@ export const OwnerAuthSchema = z.object({
   masterPin: z.string().trim().min(4, "Master PIN required"),
 });
 
+// Order Schemas
+export const OrderStatusEnum = z.enum([
+  "placed",
+  "confirmed_preparing",
+  "ready_to_dispatch",
+  "searching_rider",
+  "rider_assigned",
+  "at_pharmacy",
+  "picked_up",
+  "out_for_delivery",
+  "delivered",
+  "cancelled"
+]);
+
+export const OrderItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  genericName: z.string().optional(),
+  price: z.number(),
+  quantity: z.number().min(1),
+  requiresColdChain: z.boolean().optional(),
+  dosage: z.string().optional(),
+});
+
+export const CreateOrderSchema = z.object({
+  patientId: z.string().optional().default("u-patient-101"),
+  patientName: z.string().default("Sarah Chen"),
+  patientPhone: z.string().default("+91 98765 43210"),
+  patientAddress: z.string().default("Flat 402, Shipra Sun City, Indirapuram, Ghaziabad"),
+  pharmacyId: z.string(),
+  pharmacyName: z.string(),
+  pharmacyAddress: z.string().optional().default("Kavi Nagar Main Rd, Ghaziabad"),
+  pharmacyPhone: z.string().optional().default("+91 98765 43210"),
+  items: z.array(OrderItemSchema).min(1, "Order must contain at least one item"),
+  totalAmount: z.number(),
+  deliveryFee: z.number().optional().default(35),
+  isEmergency: z.boolean().optional().default(false),
+});
+
+export const UpdateOrderStatusSchema = z.object({
+  status: OrderStatusEnum,
+  riderId: z.string().optional(),
+  riderName: z.string().optional(),
+  riderPhone: z.string().optional(),
+  riderVehicle: z.string().optional(),
+  pharmacistNote: z.string().optional(),
+});
+
+export const VerifyPickupOtpSchema = z.object({
+  orderId: z.string(),
+  enteredPickupOtp: z.string().trim().regex(/^\d{4}$/, "Pickup OTP must be a 4-digit number"),
+});
+
+export const VerifyDeliveryOtpSchema = z.object({
+  orderId: z.string(),
+  enteredDeliveryOtp: z.string().trim().regex(/^\d{4}$/, "Delivery OTP must be a 4-digit number"),
+});
+
 export type AuthCustomLoginInput = z.infer<typeof AuthCustomLoginSchema>;
 export type PhoneSignupInput = z.infer<typeof PhoneSignupSchema>;
 export type VerifyOtpInput = z.infer<typeof VerifyOtpSchema>;
@@ -223,5 +282,11 @@ export type PrescriptionUploadInput = z.infer<typeof PrescriptionUploadSchema>;
 export type ChatAgentMessageInput = z.infer<typeof ChatAgentMessageSchema>;
 export type GSTINVerifyInput = z.infer<typeof GSTINVerifySchema>;
 export type OwnerAuthInput = z.infer<typeof OwnerAuthSchema>;
+export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;
+export type UpdateOrderStatusInput = z.infer<typeof UpdateOrderStatusSchema>;
+export type VerifyPickupOtpInput = z.infer<typeof VerifyPickupOtpSchema>;
+export type VerifyDeliveryOtpInput = z.infer<typeof VerifyDeliveryOtpSchema>;
+export type OrderStatus = z.infer<typeof OrderStatusEnum>;
+
 
 

@@ -1,4 +1,4 @@
-# 🎨 QuickMed — Frontend Specification Document
+# 🎨 ArogyaSwift — Frontend Specification Document
 
 **Document Version:** 1.0.0  
 **UI Framework:** React 19, TypeScript 5.6, Vite 7  
@@ -10,7 +10,7 @@
 
 ## 1. Design System & Aesthetics Guidelines
 
-QuickMed is designed to deliver a premium, high-trust healthcare experience with vibrant modern aesthetics, micro-animations, glassmorphism card surfaces, and dynamic telemetry indicators.
+ArogyaSwift is designed to deliver a premium, high-trust healthcare experience with vibrant modern aesthetics, micro-animations, glassmorphism card surfaces, and dynamic telemetry indicators.
 
 ### 1.1 Color Palette System
 
@@ -67,7 +67,7 @@ client/src/
 ## 3. Core Pages & View Specifications
 
 ### 3.1 `LoginHome.tsx` (Landing & Role Selection)
-- **Header**: QuickMed logo, theme toggle (Light/Dark), quick role switcher (`Patient`, `Pharmacy`, `Rider`), sign-in trigger.
+- **Header**: ArogyaSwift logo, theme toggle (Light/Dark), quick role switcher (`Patient`, `Pharmacy`, `Rider`), sign-in trigger.
 - **Hero Section**: Dynamic headline ("Medicines Delivered in 10-30 Minutes"), CTA buttons ("Try Patient Workspace", "Register Pharmacy Store", "Rider Duty Login").
 - **Features Grid**: Highlighting e-Prescription AI OCR, 2°C–8°C Cold-Chain telemetry, Generic medicine savings up to 70%, and 24/7 Multilingual AI Support.
 

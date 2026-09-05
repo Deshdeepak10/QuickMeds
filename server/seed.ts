@@ -5,7 +5,7 @@ export async function seedDatabase() {
   initDb();
 
   // Check if admin exists
-  const existingAdmin = db.prepare("SELECT * FROM users WHERE email = ?").get("compliance@quickmed.in");
+  const existingAdmin = db.prepare("SELECT * FROM users WHERE email = ?").get("compliance@arogyaswift.in");
   if (!existingAdmin) {
     const adminPasswordHash = await bcrypt.hash("Admin@123", 10);
     const patientPasswordHash = await bcrypt.hash("Patient@123", 10);
@@ -14,14 +14,14 @@ export async function seedDatabase() {
 
     // Seed Users
     const insertUser = db.prepare(`
-      INSERT INTO users (id, name, email, phone, role, password_hash, badge, avatar, vehicle_type, location, verification_status)
+      INSERT OR IGNORE INTO users (id, name, email, phone, role, password_hash, badge, avatar, vehicle_type, location, verification_status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     insertUser.run(
       "u-admin-999",
-      "QuickMed Compliance Officer",
-      "compliance@quickmed.in",
+      "ArogyaSwift Compliance Officer",
+      "compliance@arogyaswift.in",
       "+911204991200",
       "admin",
       adminPasswordHash,
@@ -63,7 +63,7 @@ export async function seedDatabase() {
     insertUser.run(
       "u-rider-303",
       "Vikram Singh",
-      "vikram.rider@quickmed.in",
+      "vikram.rider@arogyaswift.in",
       "9876599887",
       "rider",
       riderPasswordHash,
@@ -76,7 +76,7 @@ export async function seedDatabase() {
 
     // Seed Pharmacies
     const insertPharmacy = db.prepare(`
-      INSERT INTO pharmacies (id, owner_name, shop_name, license_no, gst_no, category, address, phone, email, rating, verification_status)
+      INSERT OR IGNORE INTO pharmacies (id, owner_name, shop_name, license_no, gst_no, category, address, phone, email, rating, verification_status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 

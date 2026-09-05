@@ -2,15 +2,17 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-console.log("[QuickMed] Initializing React App...");
+console.log("[ArogyaSwift] Initializing React App...");
 
 const rootElement = document.getElementById("root");
+
 if (rootElement) {
   try {
     createRoot(rootElement).render(<App />);
+    console.log("[ArogyaSwift] React App rendered successfully.");
   } catch (err) {
-    console.error("[QuickMed] Error rendering React App:", err);
+    console.error("[ArogyaSwift] Error rendering React App:", err);
   }
 } else {
-  console.error("[QuickMed] Target container #root not found in document.");
+  console.error("[ArogyaSwift] Target container #root not found in document.");
 }

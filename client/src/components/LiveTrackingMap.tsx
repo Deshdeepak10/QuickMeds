@@ -52,7 +52,7 @@ export function LiveTrackingMap({
   const [progress, setProgress] = useState(riderProgress);
   const [isLiveMoving, setIsLiveMoving] = useState(true);
   const [riderSpeed, setRiderSpeed] = useState(28);
-  const [mapMode, setMapMode] = useState<"quickmed_tech" | "google_maps">("google_maps");
+  const [mapMode, setMapMode] = useState<"arogyaswift_tech" | "google_maps">("google_maps");
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showCaptainCard, setShowCaptainCard] = useState(true);
   const [trafficCondition, setTrafficCondition] = useState<"Low" | "Moderate">("Low");
@@ -109,7 +109,7 @@ export function LiveTrackingMap({
 
   return (
     <div className="bg-slate-950 text-white rounded-3xl overflow-hidden shadow-2xl border border-slate-800 relative">
-      {/* Top QuickMed Navigation Bar */}
+      {/* Top ArogyaSwift Navigation Bar */}
       <div className="p-4 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 flex flex-wrap items-center justify-between gap-3 z-20 relative">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-emerald-500 text-slate-950 rounded-2xl flex items-center justify-center font-extrabold shadow-lg shadow-emerald-500/20">
@@ -118,7 +118,7 @@ export function LiveTrackingMap({
           <div>
             <div className="flex items-center gap-2">
               <h4 className="font-extrabold text-sm text-white tracking-tight flex items-center gap-1.5">
-                QuickMed <span className="text-emerald-400">Express Delivery</span>
+                ArogyaSwift <span className="text-emerald-400">Express Delivery</span>
               </h4>
               <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] uppercase font-bold">
                 <Signal className="w-3 h-3 mr-1 animate-pulse" /> Live Telemetry
@@ -161,14 +161,14 @@ export function LiveTrackingMap({
           <div className="p-1 bg-slate-950 rounded-xl border border-slate-800 flex text-xs font-bold">
             <button
               type="button"
-              onClick={() => setMapMode("quickmed_tech")}
+              onClick={() => setMapMode("arogyaswift_tech")}
               className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 ${
-                mapMode === "quickmed_tech"
+                mapMode === "arogyaswift_tech"
                   ? "bg-emerald-500 text-slate-950 shadow-md"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              <Compass className="w-3.5 h-3.5" /> QuickMed Tech Map
+              <Compass className="w-3.5 h-3.5" /> ArogyaSwift Tech Map
             </button>
             <button
               type="button"
@@ -194,7 +194,7 @@ export function LiveTrackingMap({
             className="w-full h-full"
           />
         ) : (
-          /* QuickMed High-Tech Dark Vector Map Canvas */
+          /* ArogyaSwift High-Tech Dark Vector Map Canvas */
           <div className="w-full h-full relative bg-slate-950">
             {/* Map Grid Pattern */}
             <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:28px_28px] opacity-40" />
@@ -202,7 +202,7 @@ export function LiveTrackingMap({
             {/* Simulated Road Network Lines */}
             <svg className="w-full h-full absolute inset-0 pointer-events-none">
               <defs>
-                <linearGradient id="quickmedGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient id="arogyaswiftGlow" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#10b981" stopOpacity="0.4" />
                   <stop offset="50%" stopColor="#34d399" stopOpacity="1" />
                   <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.6" />
@@ -226,7 +226,7 @@ export function LiveTrackingMap({
               <path
                 d="M 90 190 C 230 110, 430 270, 670 190"
                 fill="none"
-                stroke="url(#quickmedGlow)"
+                stroke="url(#arogyaswiftGlow)"
                 strokeWidth="7"
                 strokeLinecap="round"
                 strokeDasharray="12 8"
@@ -269,7 +269,7 @@ export function LiveTrackingMap({
               </div>
 
               <div className="mt-1 bg-slate-950 border border-emerald-500/60 text-emerald-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded-md shadow-md whitespace-nowrap">
-                ⚡ {riderSpeed} km/h • QuickMed EV
+                ⚡ {riderSpeed} km/h • ArogyaSwift EV
               </div>
             </div>
           </div>

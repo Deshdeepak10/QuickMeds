@@ -31,7 +31,7 @@ export function OwnerSecurityAuthModal() {
       const data = await res.json();
       if (res.ok && data.success) {
         if (data.token) {
-          localStorage.setItem("quickmed_jwt", data.token);
+          localStorage.setItem("arogyaswift_jwt", data.token);
         }
         loginAsRole("admin");
         toast.success("🎉 App Owner Access Granted!");

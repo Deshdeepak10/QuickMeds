@@ -106,7 +106,7 @@ export function PharmacyRegisterModal() {
                 Register Your Pharmacy Shop
               </DialogTitle>
               <DialogDescription className="text-slate-600 text-xs">
-                Join QuickMed's licensed partner pharmacy network to accept hyperlocal medicine orders.
+                Join ArogyaSwift's licensed partner pharmacy network to accept hyperlocal medicine orders.
               </DialogDescription>
             </div>
           </div>

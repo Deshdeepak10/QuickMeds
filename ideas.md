@@ -1,4 +1,4 @@
-# QuickMed Explainer Website - Design & Content Plan
+# ArogyaSwift Explainer Website - Design & Content Plan
 
 ## Design Philosophy
 
@@ -61,7 +61,7 @@ Contemporary tech education design, inspired by platforms like Stripe, Figma, an
 - **Hierarchy**: Clear weight and size distinctions between levels
 
 ### Brand Essence
-**Positioning**: QuickMed is the educational hub for understanding how modern delivery systems work—from food to medicine—making complex technology accessible to developers, entrepreneurs, and learners.
+**Positioning**: ArogyaSwift is the educational hub for understanding how modern delivery systems work—from food to medicine—making complex technology accessible to developers, entrepreneurs, and learners.
 
 **Personality Adjectives**:
 1. **Authoritative** - Built on comprehensive technical research
@@ -86,7 +86,7 @@ A bold, geometric symbol combining:
 - Style: Modern, minimalist, memorable
 
 ### Signature Brand Color
-**Teal/Cyan (#0891b2)** - Unmistakably QuickMed's color, used for primary CTAs, highlights, and key visual elements.
+**Teal/Cyan (#0891b2)** - Unmistakably ArogyaSwift's color, used for primary CTAs, highlights, and key visual elements.
 
 ---
 
@@ -168,7 +168,7 @@ A bold, geometric symbol combining:
 8. **Revenue Streams Chart**: Pie/bar chart visualization
 9. **Tech Stack Logos**: Arranged in a connected pattern
 10. **Database Schema**: Visual representation of tables
-11. **Logo/Wordmark**: QuickMed brand mark
+11. **Logo/Wordmark**: ArogyaSwift brand mark
 
 ---
 

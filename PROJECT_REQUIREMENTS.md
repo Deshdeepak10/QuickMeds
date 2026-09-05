@@ -1,4 +1,4 @@
-# 📋 QuickMed — Project Requirement Document (PRD)
+# 📋 ArogyaSwift — Project Requirement Document (PRD)
 
 **Document Version:** 1.0.0  
 **Status:** Approved & Implemented  
@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary & Product Vision
 
-QuickMed is an ultra-fast, CDSCO-compliant hyperlocal medicine delivery and cold-chain logistics platform designed to solve critical delays in emergency healthcare delivery. QuickMed bridges licensed retail pharmacies, certified delivery riders equipped with temperature-controlled cold boxes, and patients requiring urgent prescription medications.
+ArogyaSwift is an ultra-fast, CDSCO-compliant hyperlocal medicine delivery and cold-chain logistics platform designed to solve critical delays in emergency healthcare delivery. ArogyaSwift bridges licensed retail pharmacies, certified delivery riders equipped with temperature-controlled cold boxes, and patients requiring urgent prescription medications.
 
 ### Primary Goals:
 1. **Speed & Reliability**: Achieve 10-to-30 minute delivery times for prescription medications.
@@ -58,7 +58,7 @@ QuickMed is an ultra-fast, CDSCO-compliant hyperlocal medicine delivery and cold
 ### 3.3 Live Navigation & Geolocation Tracking
 - **FR-3.1**: The live delivery map MUST default to Ghaziabad coordinates (`28.6692, 77.4538`).
 - **FR-3.2**: The map MUST support HTML5 device geolocation (`Use Device Location` button) to request GPS coordinates.
-- **FR-3.3**: The map MUST allow toggling between Google Maps view (`MapView`) and QuickMed Tech vector navigation view.
+- **FR-3.3**: The map MUST allow toggling between Google Maps view (`MapView`) and ArogyaSwift Tech vector navigation view.
 
 ### 3.4 Cold-Chain Telemetry Monitor
 - **FR-4.1**: Real-time insulated cold-box temperature telemetry MUST display live temperature readings (`3.5°C to 4.2°C`).

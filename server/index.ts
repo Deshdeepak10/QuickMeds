@@ -10,12 +10,12 @@ const port = process.env.PORT || 3000;
 seedDatabase()
   .then(() => {
     server.listen(port, () => {
-      console.log(`🚀 QuickMed Real Backend Server running on http://localhost:${port}/`);
+      console.log(`🚀 ArogyaSwift Real Backend Server running on http://localhost:${port}/`);
     });
   })
   .catch((err) => {
     console.error("Failed to initialize database:", err);
     server.listen(port, () => {
-      console.log(`🚀 QuickMed Server running on http://localhost:${port}/ (with memory fallback)`);
+      console.log(`🚀 ArogyaSwift Server running on http://localhost:${port}/ (with memory fallback)`);
     });
   });

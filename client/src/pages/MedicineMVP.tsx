@@ -40,7 +40,12 @@ import {
   Plus,
   Minus,
   Trash2,
-  ShoppingBag
+  ShoppingBag,
+  Play,
+  Store,
+  Bike,
+  PackageCheck,
+  Zap
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -202,7 +207,32 @@ const PHARMACIES = [
 
 export default function MedicineMVP() {
   const [, setLocation] = useLocation();
-  const { user, setIsAuthModalOpen, setAuthModalRole, setIsOwnerAuthModalOpen, registeredPharmacies, approvePharmacyStore, rejectPharmacyStore, setIsPharmacyRegisterModalOpen, logout } = useAuth();
+  const {
+    user,
+    setIsAuthModalOpen,
+    setAuthModalRole,
+    setIsOwnerAuthModalOpen,
+    registeredPharmacies,
+    approvePharmacyStore,
+    rejectPharmacyStore,
+    setIsPharmacyRegisterModalOpen,
+    logout,
+    orders,
+    currentOrder,
+    setCurrentOrder,
+    createOrder,
+    updateOrderStatus,
+    verifyPickupOtp,
+    verifyDeliveryOtp,
+    resetDemoOrder,
+    quickSwitchRole,
+    setIsDemoModalOpen,
+    openLegalPolicy,
+    setIsCookiePreferencesOpen,
+    setIsOnboardingOpen,
+    setIsHelpCenterOpen,
+    setIsAccountSettingsOpen,
+  } = useAuth();
   const [activeTab, setActiveTab] = useState("ocr");
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
 
@@ -384,7 +414,7 @@ export default function MedicineMVP() {
   // Pill Reminder Checklist
   const [takenMeds, setTakenMeds] = useState<Record<string, boolean>>({});
 
-  // QuickMed Cart System State
+  // ArogyaSwift Cart System State
   interface CartItem {
     id: string;
     name: string;
@@ -551,15 +581,42 @@ export default function MedicineMVP() {
     }, 300);
   };
 
-  // Simulate rider movement
+  // Map currentOrder status to orderStage and riderProgress for real-time multi-portal sync
   useEffect(() => {
-    if (orderStage === 3 || orderStage === 4) {
-      const interval = setInterval(() => {
-        setRiderProgress((prev) => (prev < 90 ? prev + 5 : prev));
-      }, 2000);
-      return () => clearInterval(interval);
+    if (!currentOrder) return;
+    const st = currentOrder.status;
+    if (st === "placed") {
+      setOrderStage(1);
+      setRiderProgress(15);
+      setIsPharmacyPickedUp(false);
+      setIsDelivered(false);
+    } else if (st === "confirmed_preparing") {
+      setOrderStage(2);
+      setRiderProgress(25);
+      setIsPharmacyPickedUp(false);
+      setIsDelivered(false);
+    } else if (st === "ready_to_dispatch" || st === "searching_rider") {
+      setOrderStage(2);
+      setRiderProgress(35);
+      setIsPharmacyPickedUp(false);
+      setIsDelivered(false);
+    } else if (st === "rider_assigned" || st === "at_pharmacy") {
+      setOrderStage(3);
+      setRiderProgress(50);
+      setIsPharmacyPickedUp(false);
+      setIsDelivered(false);
+    } else if (st === "picked_up" || st === "out_for_delivery") {
+      setOrderStage(4);
+      setRiderProgress(75);
+      setIsPharmacyPickedUp(true);
+      setIsDelivered(false);
+    } else if (st === "delivered") {
+      setOrderStage(5);
+      setRiderProgress(100);
+      setIsPharmacyPickedUp(true);
+      setIsDelivered(true);
     }
-  }, [orderStage]);
+  }, [currentOrder?.status]);
 
   const toggleGeneric = (id: string) => {
     setUseGenerics((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -579,26 +636,83 @@ export default function MedicineMVP() {
     toast.success("Pharmacist digital signature applied! Order unlocked for dispatch.");
   };
 
-  const handleVerifyPharmacyOtp = () => {
-    if (enteredPharmacyOtp === "8514") {
+  const handleVerifyPharmacyOtp = async () => {
+    const orderId = currentOrder?.id || "AS-7821";
+    const res = await verifyPickupOtp(orderId, enteredPharmacyOtp || "8514");
+    if (res.success) {
       setIsPharmacyPickedUp(true);
-      setOrderStage(3);
-      setRiderProgress(50);
-      toast.success("🎉 Store Pickup OTP Verified (8514)! Medicine package handed over to Rider Vikram Singh.");
+      setOrderStage(4);
+      setRiderProgress(75);
+      setEnteredPharmacyOtp("");
+      toast.success(res.message || "🎉 Store Pickup OTP Verified! Package handed over to Rider Vikram Singh.");
     } else {
-      toast.error("Invalid Pharmacy Pickup OTP! Enter 8514");
+      toast.error(res.error || "Invalid Pharmacy Pickup OTP! Enter 8514");
     }
   };
 
-  const handleVerifyOtp = () => {
-    if (enteredOtp === "4829") {
+  const handleVerifyOtp = async () => {
+    const orderId = currentOrder?.id || "AS-7821";
+    const res = await verifyDeliveryOtp(orderId, enteredOtp || "4829");
+    if (res.success) {
       setIsDelivered(true);
       setOrderStage(5);
       setRiderProgress(100);
-      toast.success("🎉 Customer Delivery OTP Verified (4829)! Doorstep delivery complete.");
+      setEnteredOtp("");
+      toast.success(res.message || "🎉 Customer Delivery OTP Verified! Doorstep delivery complete.");
     } else {
-      toast.error("Invalid Customer OTP! Enter 4829");
+      toast.error(res.error || "Invalid Customer OTP! Enter 4829");
     }
+  };
+
+  const handlePlaceOrder = async () => {
+    const itemsToOrder = scannedData?.meds.map((m) => ({
+      id: m.id,
+      name: useGenerics[m.id] ? m.genericName : m.name,
+      genericName: m.genericName,
+      price: useGenerics[m.id] ? m.genericPrice : m.price,
+      quantity: m.quantity || 1,
+      requiresColdChain: m.coldChain,
+      dosage: m.dosage,
+    })) || [
+      {
+        id: "m1",
+        name: "Lantus Solostar Pen (Insulin Glargine 100 IU/ml)",
+        price: 890,
+        quantity: 1,
+        requiresColdChain: true,
+      },
+      {
+        id: "m2",
+        name: "Janumet 50mg/500mg (Sitagliptin + Metformin)",
+        price: 650,
+        quantity: 1,
+        requiresColdChain: false,
+      },
+    ];
+
+    const total = calculateSubtotal() + 35 + (isEmergencyExpress ? 150 : 0);
+
+    const newOrder = await createOrder({
+      patientId: user.id || "u-patient-101",
+      patientName: user.name || "Sarah Chen",
+      patientPhone: user.phone || "+91 98765 43210",
+      patientAddress: user.location || "Flat 402, Shipra Sun City, Indirapuram, Ghaziabad",
+      pharmacyId: selectedPharmacy.id,
+      pharmacyName: selectedPharmacy.name,
+      pharmacyAddress: "Kavi Nagar Main Rd, Ghaziabad",
+      pharmacyPhone: selectedPharmacy.phone || "+91 98765 43210",
+      items: itemsToOrder,
+      totalAmount: total,
+      deliveryFee: 35,
+      isEmergency: isEmergencyExpress,
+    });
+
+    if (newOrder) {
+      toast.success(
+        `🎉 Order #${newOrder.id} placed! Transmitted to ${selectedPharmacy.name}. Store is reviewing prescription.`
+      );
+    }
+    setActiveTab("delivery");
   };
 
   return (
@@ -613,7 +727,7 @@ export default function MedicineMVP() {
               </div>
               <div>
                 <h1 className="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                  QuickMed <span className="text-emerald-600">Medicine Delivery</span>
+                  ArogyaSwift <span className="text-emerald-600">Medicine Delivery</span>
                 </h1>
                 <p className="text-[11px] text-slate-500 font-medium">Licensed Hyperlocal Pharmacy Platform</p>
               </div>
@@ -648,6 +762,17 @@ export default function MedicineMVP() {
 
             <Button
               size="sm"
+              onClick={() => setIsDemoModalOpen(true)}
+              className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-extrabold text-xs px-3 py-1.5 flex items-center gap-1.5 shadow-md animate-pulse hover:animate-none"
+              title="Open 3-Portal Live Order-to-Delivery Simulation"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">⚡ Live Demo Simulator</span>
+              <span className="sm:hidden">⚡ Demo</span>
+            </Button>
+
+            <Button
+              size="sm"
               variant="outline"
               className="border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 font-bold text-xs px-3 py-1.5 flex items-center gap-1.5"
               onClick={() => setIsProfileModalOpen(true)}
@@ -666,7 +791,6 @@ export default function MedicineMVP() {
               Log Out
             </Button>
 
-
             {/* Separate App Owner Security Login Icon - Only visible for Admin */}
             {user.role === "admin" && (
               <Button
@@ -683,6 +807,109 @@ export default function MedicineMVP() {
           </div>
         </div>
       </header>
+
+      {/* Quick Multi-Role Switcher & Active Order Pipeline Header Bar */}
+      <div className="bg-slate-900 text-white px-4 py-2 border-b border-slate-800 text-xs shadow-inner">
+        <div className="container mx-auto flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-400" /> Quick Portal Switch:
+            </span>
+            <button
+              type="button"
+              onClick={() => quickSwitchRole("patient")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                user.role === "patient"
+                  ? "bg-emerald-500 text-slate-950 shadow-xs"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
+              }`}
+            >
+              <span>👩‍💼</span> Patient View
+            </button>
+            <button
+              type="button"
+              onClick={() => quickSwitchRole("pharmacy")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                user.role === "pharmacy"
+                  ? "bg-emerald-500 text-slate-950 shadow-xs"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
+              }`}
+            >
+              <span>🏥</span> Pharmacy View
+            </button>
+            <button
+              type="button"
+              onClick={() => quickSwitchRole("rider")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                user.role === "rider"
+                  ? "bg-cyan-400 text-slate-950 shadow-xs"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
+              }`}
+            >
+              <span>🏍️</span> Rider View
+            </button>
+            <button
+              type="button"
+              onClick={() => quickSwitchRole("admin")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                user.role === "admin"
+                  ? "bg-purple-400 text-slate-950 shadow-xs"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white"
+              }`}
+            >
+              <span>👑</span> Admin
+            </button>
+          </div>
+
+          {/* Live Order Status Indicator & Demo Trigger */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {currentOrder && (
+              <div className="flex items-center gap-2 bg-slate-800/90 border border-slate-700 px-3 py-1 rounded-xl text-[11px]">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+                <span className="font-mono font-bold text-slate-300">Order #{currentOrder.id}:</span>
+                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[10px] font-bold uppercase">
+                  {currentOrder.status.replace(/_/g, " ")}
+                </Badge>
+              </div>
+            )}
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsOnboardingOpen(true)}
+              className="h-7 px-2.5 bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 text-xs font-semibold rounded-xl"
+            >
+              ⚡ How It Works
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsHelpCenterOpen(true)}
+              className="h-7 px-2.5 bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 text-xs font-semibold rounded-xl"
+            >
+              Help & FAQs
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsAccountSettingsOpen(true)}
+              className="h-7 px-2.5 bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 text-xs font-semibold rounded-xl"
+            >
+              Settings
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => setIsDemoModalOpen(true)}
+              className="h-7 px-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-xs flex items-center gap-1"
+            >
+              <Play className="w-3 h-3 fill-current" /> Auto Demo
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Role Banner */}
       <div className="bg-gradient-to-r from-emerald-900 to-slate-900 text-white py-2.5 px-4 text-xs font-medium border-b border-emerald-800">
@@ -740,6 +967,7 @@ export default function MedicineMVP() {
                   <TabsTrigger value="dispatch" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">2. Sourcing</TabsTrigger>
                   <TabsTrigger value="delivery" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">3. Cold-Chain</TabsTrigger>
                   <TabsTrigger value="reminders" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">4. Pill Vault</TabsTrigger>
+                  <TabsTrigger value="purchases" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">5. Purchase History</TabsTrigger>
                 </>
               )}
               {user.role === "pharmacy" && (
@@ -747,16 +975,19 @@ export default function MedicineMVP() {
                   <TabsTrigger value="verification" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">1. Rx Audit</TabsTrigger>
                   <TabsTrigger value="dispatch" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">2. Sourcing</TabsTrigger>
                   <TabsTrigger value="delivery" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">3. Dispatch</TabsTrigger>
+                  <TabsTrigger value="customer-orders" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">4. Customer Orders</TabsTrigger>
                 </>
               )}
               {user.role === "rider" && (
                 <>
-                  <TabsTrigger value="delivery" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">1. Delivery</TabsTrigger>
+                  <TabsTrigger value="delivery" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">1. Active Delivery</TabsTrigger>
+                  <TabsTrigger value="rider-history" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">2. Delivery History</TabsTrigger>
                 </>
               )}
               {user.role === "admin" && (
                 <>
                   <TabsTrigger value="admin" className="shrink-0 whitespace-nowrap data-[state=active]:bg-purple-700 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">👑 App Owner Portal</TabsTrigger>
+                  <TabsTrigger value="customer-orders" className="shrink-0 whitespace-nowrap data-[state=active]:bg-purple-700 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">All Customers & Orders</TabsTrigger>
                   <TabsTrigger value="revenue" className="shrink-0 whitespace-nowrap data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-extrabold text-xs md:text-sm px-3 py-2">Economics</TabsTrigger>
                 </>
               )}
@@ -1069,6 +1300,141 @@ export default function MedicineMVP() {
 
             {/* TAB CONTENT 2: PHARMACIST AUDIT PORTAL */}
             <TabsContent value="verification" className="mt-8 space-y-6">
+              {/* Store Incoming Orders & Dispatch Pipeline Card */}
+              {currentOrder && (
+                <Card className="border-2 border-emerald-500 bg-gradient-to-r from-emerald-50 via-teal-50 to-white shadow-lg overflow-hidden">
+                  <div className="bg-emerald-700 text-white px-5 py-3 flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-300 animate-ping" />
+                      <h3 className="font-black text-sm uppercase tracking-wide flex items-center gap-2">
+                        <Store className="w-4 h-4 text-emerald-200" /> Active Store Incoming Order Pipeline
+                      </h3>
+                      <Badge className="bg-emerald-900/60 text-emerald-200 border-none font-mono text-xs">
+                        #{currentOrder.id}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-white text-emerald-800 font-extrabold text-xs px-2.5 py-0.5">
+                        {currentOrder.status.replace(/_/g, " ")}
+                      </Badge>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setIsDemoModalOpen(true)}
+                        className="bg-emerald-100 text-emerald-800 hover:bg-white text-xs h-7 font-bold"
+                      >
+                        ⚡ Live Demo Simulator
+                      </Button>
+                    </div>
+                  </div>
+
+                  <CardContent className="p-5 space-y-4">
+                    <div className="grid md:grid-cols-3 gap-4 text-xs">
+                      <div className="p-3 bg-white/80 rounded-xl border border-emerald-200 shadow-xs">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Customer / Patient</span>
+                        <div className="font-bold text-slate-800 text-sm">{currentOrder.patient_name}</div>
+                        <div className="text-slate-600 text-[11px] mt-0.5">{currentOrder.patient_phone}</div>
+                        <div className="text-slate-500 text-[11px] truncate mt-0.5">{currentOrder.patient_address}</div>
+                      </div>
+
+                      <div className="p-3 bg-white/80 rounded-xl border border-emerald-200 shadow-xs">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Fulfillment Store</span>
+                        <div className="font-bold text-slate-800 text-sm">{currentOrder.pharmacy_name}</div>
+                        <div className="text-slate-600 text-[11px] mt-0.5">{currentOrder.pharmacy_phone}</div>
+                        <div className="text-slate-500 text-[11px] truncate mt-0.5">{currentOrder.pharmacy_address}</div>
+                      </div>
+
+                      <div className="p-3 bg-white/80 rounded-xl border border-emerald-200 shadow-xs">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Assigned Delivery Partner</span>
+                        <div className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                          <Bike className="w-3.5 h-3.5 text-emerald-600" />
+                          {currentOrder.rider_name || "Searching for nearby rider..."}
+                        </div>
+                        <div className="text-slate-600 text-[11px] mt-0.5">Vehicle: {currentOrder.rider_vehicle || "EV Cargo Bike"}</div>
+                        <div className="text-emerald-700 font-semibold text-[11px] mt-0.5">
+                          {currentOrder.rider_phone ? `Phone: ${currentOrder.rider_phone}` : "Broadcast active to 5 riders"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Items & Cold Chain Requirements */}
+                    <div className="p-3.5 bg-white rounded-xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                      <div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Prescribed Medicines Ordered</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {currentOrder.items?.map((item, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs bg-slate-50 border-slate-300 font-medium py-1 px-2.5">
+                              {item.name} × {item.quantity}
+                              {item.requiresColdChain && (
+                                <span className="ml-1 text-[10px] text-cyan-600 font-bold">❄️ 2-8°C</span>
+                              )}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-[10px] text-slate-400 font-semibold uppercase">Total Billable</div>
+                        <div className="text-base font-black text-slate-900">₹{currentOrder.total_amount}</div>
+                      </div>
+                    </div>
+
+                    {/* Pharmacy Action Bar based on Status */}
+                    <div className="p-4 bg-slate-900 text-white rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="space-y-0.5 text-center sm:text-left">
+                        <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center justify-center sm:justify-start gap-1.5">
+                          <ShieldCheck className="w-4 h-4" /> Store Workflow Control
+                        </div>
+                        <p className="text-xs text-slate-300">
+                          {currentOrder.status === "placed" && "New order received! Review prescription and confirm fulfillment."}
+                          {currentOrder.status === "confirmed_preparing" && "Order accepted. Pack with tamper-evident seal and mark ready."}
+                          {(currentOrder.status === "ready_to_dispatch" || currentOrder.status === "searching_rider" || currentOrder.status === "rider_assigned" || currentOrder.status === "at_pharmacy") && "Awaiting rider arrival. Verify the 4-digit pickup code below when handing over package."}
+                          {(currentOrder.status === "picked_up" || currentOrder.status === "out_for_delivery") && "Package handed over to rider. In transit to patient doorstep."}
+                          {currentOrder.status === "delivered" && "Order completed and delivered to Sarah Chen."}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-end">
+                        {currentOrder.status === "placed" && (
+                          <Button
+                            onClick={() => updateOrderStatus(currentOrder.id, "confirmed_preparing")}
+                            className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs h-9 px-4 shadow-md"
+                          >
+                            <Check className="w-4 h-4 mr-1" /> Confirm & Start Packing
+                          </Button>
+                        )}
+
+                        {currentOrder.status === "confirmed_preparing" && (
+                          <Button
+                            onClick={() => updateOrderStatus(currentOrder.id, "ready_to_dispatch")}
+                            className="bg-teal-400 hover:bg-teal-500 text-slate-950 font-extrabold text-xs h-9 px-4 shadow-md"
+                          >
+                            <PackageCheck className="w-4 h-4 mr-1" /> Mark Ready for Dispatch
+                          </Button>
+                        )}
+
+                        {(currentOrder.status === "ready_to_dispatch" || currentOrder.status === "searching_rider" || currentOrder.status === "rider_assigned" || currentOrder.status === "at_pharmacy") && (
+                          <div className="flex items-center gap-2 bg-amber-500/20 border border-amber-400/40 rounded-lg px-3 py-1.5">
+                            <span className="text-[11px] text-amber-300 font-bold uppercase">Store Pickup OTP:</span>
+                            <span className="font-mono text-base font-black text-amber-200 tracking-wider">
+                              {currentOrder.pickup_otp || "8514"}
+                            </span>
+                          </div>
+                        )}
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setActiveTab("delivery")}
+                          className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white text-xs h-9"
+                        >
+                          <MapPin className="w-3.5 h-3.5 mr-1 text-emerald-400" /> Track in Delivery Portal
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <div className="grid lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-8 space-y-6">
                   <Card className="bg-white border-slate-200 text-slate-900 shadow-md">
@@ -1436,15 +1802,7 @@ export default function MedicineMVP() {
                             ? "bg-rose-600 hover:bg-rose-700 text-white"
                             : "bg-emerald-600 hover:bg-emerald-700 text-white"
                           }`}
-                        onClick={() => {
-                          setOrderStage(3);
-                          setActiveTab("delivery");
-                          toast.success(
-                            isEmergencyExpress
-                              ? "🚨 Emergency Priority Order dispatched! Pharmacist notified for immediate express dispatch."
-                              : "Standard 3-hour order dispatched to " + selectedPharmacy.name
-                          );
-                        }}
+                        onClick={handlePlaceOrder}
                       >
                         {isEmergencyExpress ? "Confirm Emergency Express Order 🚨" : "Confirm Standard Order (3-Hour ETA)"} <Truck className="w-5 h-5 ml-1" />
                       </Button>
@@ -1520,14 +1878,142 @@ export default function MedicineMVP() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {/* PHARMACY VIEW: Store Pickup OTP (8514) */}
+                      {/* 6-Stage Progress Stepper for Everyone */}
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-slate-800 uppercase tracking-wider text-[10px]">
+                            Live Sequence Status
+                          </span>
+                          <Badge className="bg-emerald-600 text-white font-mono text-[10px]">
+                            {currentOrder?.status?.replace(/_/g, " ").toUpperCase() || "ORDER PLACED"}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 text-center font-bold text-[10px]">
+                          <div className={`p-1.5 rounded-lg border ${
+                            orderStage >= 1 ? "bg-emerald-100 text-emerald-900 border-emerald-300" : "bg-white text-slate-400 border-slate-200"
+                          }`}>
+                            1. Placed
+                          </div>
+                          <div className={`p-1.5 rounded-lg border ${
+                            orderStage >= 2 ? "bg-emerald-100 text-emerald-900 border-emerald-300" : "bg-white text-slate-400 border-slate-200"
+                          }`}>
+                            2. Confirmed
+                          </div>
+                          <div className={`p-1.5 rounded-lg border ${
+                            orderStage >= 2 && (currentOrder?.status === "ready_to_dispatch" || currentOrder?.status === "searching_rider" || orderStage >= 3) ? "bg-emerald-100 text-emerald-900 border-emerald-300" : "bg-white text-slate-400 border-slate-200"
+                          }`}>
+                            3. Ready
+                          </div>
+                          <div className={`p-1.5 rounded-lg border ${
+                            orderStage >= 3 ? "bg-emerald-100 text-emerald-900 border-emerald-300" : "bg-white text-slate-400 border-slate-200"
+                          }`}>
+                            4. Rider
+                          </div>
+                          <div className={`p-1.5 rounded-lg border ${
+                            orderStage >= 4 ? "bg-emerald-100 text-emerald-900 border-emerald-300" : "bg-white text-slate-400 border-slate-200"
+                          }`}>
+                            5. Dispatched
+                          </div>
+                          <div className={`p-1.5 rounded-lg border ${
+                            orderStage >= 5 ? "bg-emerald-100 text-emerald-900 border-emerald-300" : "bg-white text-slate-400 border-slate-200"
+                          }`}>
+                            6. Delivered
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* PHARMACY VIEW: Store Confirm, Dispatch & Store Pickup OTP (8514) */}
                       {user.role === "pharmacy" && (
                         <div className="space-y-3">
+                          {/* Store Actions Based on Order Status */}
+                          {(!currentOrder || currentOrder.status === "placed") && (
+                            <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-2xl space-y-2">
+                              <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
+                                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
+                                <span>New Incoming Order from Sarah Chen!</span>
+                              </div>
+                              <p className="text-[11px] text-slate-600">
+                                Patient ordered Lantus Solostar Pen & Janumet. Doctor Rx valid. Confirm to start cold-pack packaging.
+                              </p>
+                              <Button
+                                onClick={async () => {
+                                  if (!currentOrder) return;
+                                  await updateOrderStatus(currentOrder.id, "confirmed_preparing");
+                                  toast.success("Pharmacy confirmed order! Packaging started.");
+                                }}
+                                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm"
+                              >
+                                Confirm Order & Start Packing 📦
+                              </Button>
+                            </div>
+                          )}
+
+                          {currentOrder?.status === "confirmed_preparing" && (
+                            <div className="p-3.5 bg-cyan-50 border border-cyan-300 rounded-2xl space-y-2">
+                              <div className="flex items-center gap-2 text-cyan-900 font-bold text-xs">
+                                <CheckCircle2 className="w-4 h-4 text-cyan-600" />
+                                <span>Medicines Packed with Insulated Gel Kit</span>
+                              </div>
+                              <p className="text-[11px] text-slate-600">
+                                Cold-chain seal attached. Mark ready for dispatch to broadcast request to nearby riders.
+                              </p>
+                              <Button
+                                onClick={async () => {
+                                  if (!currentOrder) return;
+                                  await updateOrderStatus(currentOrder.id, "ready_to_dispatch");
+                                  toast.success("Order marked ready for dispatch! Searching for delivery riders.");
+                                }}
+                                className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs shadow-sm"
+                              >
+                                Mark Ready for Dispatch 🚀
+                              </Button>
+                            </div>
+                          )}
+
+                          {(currentOrder?.status === "ready_to_dispatch" || currentOrder?.status === "searching_rider") && (
+                            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 text-xs flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+                                <span>Searching express delivery partner within 2.5 km...</span>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => quickSwitchRole("rider")}
+                                className="h-6 text-[10px] border-blue-300 text-blue-800 hover:bg-blue-100"
+                              >
+                                Switch to Rider View ➔
+                              </Button>
+                            </div>
+                          )}
+
+                          {currentOrder?.status === "rider_assigned" && (
+                            <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-indigo-900 text-xs flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <Truck className="w-4 h-4 text-indigo-600 animate-bounce" />
+                                <span>Rider Vikram Singh assigned & heading to store.</span>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => quickSwitchRole("rider")}
+                                className="h-6 text-[10px] border-indigo-300 text-indigo-800 hover:bg-indigo-100"
+                              >
+                                Switch to Rider ➔
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* Pharmacy Store Pickup OTP Display Card */}
                           <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl text-center space-y-2">
-                            <span className="text-xs text-emerald-800 font-extrabold block uppercase tracking-wider">Pharmacy Store Pickup OTP</span>
-                            <span className="text-4xl font-mono font-extrabold text-emerald-700 tracking-widest block">8514</span>
+                            <span className="text-xs text-emerald-800 font-extrabold block uppercase tracking-wider">
+                              Pharmacy Store Pickup OTP
+                            </span>
+                            <span className="text-4xl font-mono font-extrabold text-emerald-700 tracking-widest block">
+                              {currentOrder?.pickup_otp || "8514"}
+                            </span>
                             <p className="text-xs text-slate-600 pt-1 font-medium">
-                              Express rider <strong>Vikram Singh</strong> will ask for this code (8514) to confirm package pickup from your store.
+                              Express rider <strong>Vikram Singh</strong> will ask for this code ({currentOrder?.pickup_otp || "8514"}) to verify package handover from your store.
                             </p>
                           </div>
 
@@ -1538,16 +2024,13 @@ export default function MedicineMVP() {
                             </div>
                           ) : (
                             <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs font-medium flex items-center justify-between gap-2">
-                              <span>Waiting for Rider pickup verification (Code: 8514)...</span>
+                              <span>Waiting for Rider pickup OTP verification (Code: {currentOrder?.pickup_otp || "8514"})...</span>
                               <Button
                                 size="sm"
-                                onClick={() => {
-                                  setIsPharmacyPickedUp(true);
-                                  toast.success("🎉 Store Pickup OTP (8514) Verified! Rider Vikram Singh en route to patient.");
-                                }}
+                                onClick={handleVerifyPharmacyOtp}
                                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] h-7 px-3"
                               >
-                                Simulate Rider Pickup ✓
+                                Verify Pickup OTP ✓
                               </Button>
                             </div>
                           )}
@@ -1557,28 +2040,96 @@ export default function MedicineMVP() {
                       {/* PATIENT VIEW: Customer Doorstep Delivery OTP (4829) */}
                       {user.role === "patient" && (
                         <div className="space-y-3">
+                          {/* Live Status Messaging */}
+                          {(!currentOrder || currentOrder.status === "placed") && (
+                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-center gap-2">
+                              <Clock className="w-4 h-4 animate-spin text-amber-600 shrink-0" />
+                              <span>Order transmitted to {selectedPharmacy.name}. Store is reviewing your prescription.</span>
+                            </div>
+                          )}
+
+                          {currentOrder?.status === "confirmed_preparing" && (
+                            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs flex items-center gap-2">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                              <span>Store confirmed your order! Pharmacist is packing your medicines with cold storage kit.</span>
+                            </div>
+                          )}
+
+                          {(currentOrder?.status === "ready_to_dispatch" || currentOrder?.status === "searching_rider") && (
+                            <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-xl text-cyan-900 text-xs flex items-center gap-2">
+                              <Zap className="w-4 h-4 text-cyan-600 animate-bounce shrink-0" />
+                              <span>Medicines packed! Searching for nearby express delivery rider...</span>
+                            </div>
+                          )}
+
+                          {(currentOrder?.status === "rider_assigned" || currentOrder?.status === "at_pharmacy") && (
+                            <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 text-xs flex items-center gap-2">
+                              <Truck className="w-4 h-4 text-blue-600 shrink-0" />
+                              <span>Delivery partner Vikram Singh assigned! Heading to {selectedPharmacy.name} for pickup.</span>
+                            </div>
+                          )}
+
                           <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl text-center space-y-2">
                             <span className="text-xs text-amber-800 font-extrabold block uppercase tracking-wider">Your Customer Delivery PIN / OTP</span>
-                            <span className="text-4xl font-mono font-extrabold text-amber-700 tracking-widest block">4829</span>
+                            <span className="text-4xl font-mono font-extrabold text-amber-700 tracking-widest block">
+                              {currentOrder?.delivery_otp || "4829"}
+                            </span>
                             <p className="text-xs text-slate-600 pt-1 font-medium">
-                              Give this code to rider <strong>Vikram Singh</strong> when receiving your medicine box.
+                              Give this code ({currentOrder?.delivery_otp || "4829"}) to rider <strong>Vikram Singh</strong> when receiving your medicine box at doorstep.
                             </p>
                           </div>
 
                           {isDelivered && (
                             <div className="p-4 bg-emerald-100 border border-emerald-300 rounded-xl text-emerald-900 text-xs font-semibold flex items-center gap-3">
                               <CheckCircle2 className="w-6 h-6 flex-shrink-0 text-emerald-600" />
-                              <span>Order successfully delivered & verified! Prescription safety record updated.</span>
+                              <div>
+                                <span className="font-bold block">Order successfully delivered & verified!</span>
+                                <span className="text-slate-600 text-[11px]">OTP verified. Cold-chain verified at 4.2°C.</span>
+                              </div>
                             </div>
                           )}
                         </div>
                       )}
 
-                      {/* RIDER VIEW & OTHER ROLES: Dual Verification Form */}
+                      {/* RIDER VIEW & ADMIN: Dual Verification & Incoming Request Form */}
                       {(user.role === "rider" || user.role === "admin") && (
                         <div className="space-y-4">
+                          {/* Incoming Dispatch Request Card if order is ready to dispatch */}
+                          {(currentOrder?.status === "ready_to_dispatch" || currentOrder?.status === "searching_rider") && (
+                            <div className="p-4 bg-gradient-to-r from-cyan-900 to-slate-900 text-white rounded-2xl shadow-lg border border-cyan-500/40 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-xs flex items-center gap-1.5 text-cyan-300">
+                                  <Zap className="w-4 h-4 text-amber-400 animate-bounce" /> New Delivery Request Available!
+                                </span>
+                                <Badge className="bg-emerald-500 text-slate-950 font-black text-[10px]">
+                                  Payout: ₹65
+                                </Badge>
+                              </div>
+                              <div className="space-y-1 text-xs text-slate-300">
+                                <p>Pickup: <strong className="text-white">{currentOrder.pharmacy_name || "Apollo Pharmacy Hub"}</strong> (0.8 km)</p>
+                                <p>Drop: <strong className="text-white">{currentOrder.patient_name || "Sarah Chen"}</strong> (2.4 km)</p>
+                                <p className="text-cyan-300 text-[11px] font-mono">Cold-Chain Insulated Kit Required (2°C–8°C)</p>
+                              </div>
+                              <Button
+                                onClick={async () => {
+                                  if (!currentOrder) return;
+                                  await updateOrderStatus(currentOrder.id, "rider_assigned", {
+                                    riderId: "u-rider-303",
+                                    riderName: "Vikram Singh",
+                                    riderPhone: "+91 98765 99887",
+                                    riderVehicle: "EV Scooter (UP-14-EV-7721)",
+                                  });
+                                  toast.success("Delivery request accepted! Heading to store for pickup.");
+                                }}
+                                className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-black text-xs h-9 shadow-md"
+                              >
+                                Accept Delivery Order 🏍️
+                              </Button>
+                            </div>
+                          )}
+
                           {/* Step 1: Store Pickup OTP (8514) */}
-                          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                             <div className="flex items-center justify-between text-xs">
                               <span className="font-bold text-slate-900">Step 1: Pharmacy Store Pickup Verification</span>
                               {isPharmacyPickedUp ? (
@@ -1589,28 +2140,33 @@ export default function MedicineMVP() {
                             </div>
 
                             {!isPharmacyPickedUp ? (
-                              <div className="flex gap-2 pt-1">
-                                <Input
-                                  placeholder="Enter Store OTP (8514)"
-                                  value={enteredPharmacyOtp}
-                                  onChange={(e) => setEnteredPharmacyOtp(e.target.value)}
-                                  maxLength={4}
-                                  className="bg-white border-slate-300 font-mono text-sm font-bold text-slate-900"
-                                />
-                                <Button
-                                  onClick={handleVerifyPharmacyOtp}
-                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4"
-                                >
-                                  Verify Pickup
-                                </Button>
+                              <div className="space-y-2 pt-1">
+                                <p className="text-[11px] text-slate-600">
+                                  Ask on-duty pharmacist for the 4-digit Store Pickup OTP (Code: {currentOrder?.pickup_otp || "8514"}):
+                                </p>
+                                <div className="flex gap-2">
+                                  <Input
+                                    placeholder={`Enter Store OTP (${currentOrder?.pickup_otp || "8514"})`}
+                                    value={enteredPharmacyOtp}
+                                    onChange={(e) => setEnteredPharmacyOtp(e.target.value)}
+                                    maxLength={4}
+                                    className="bg-white border-slate-300 font-mono text-sm font-bold text-slate-900"
+                                  />
+                                  <Button
+                                    onClick={handleVerifyPharmacyOtp}
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 shrink-0"
+                                  >
+                                    Verify Pickup ✓
+                                  </Button>
+                                </div>
                               </div>
                             ) : (
-                              <p className="text-[11px] text-emerald-700 font-medium">✓ Pharmacy Pickup OTP (8514) verified at Apollo Hub.</p>
+                              <p className="text-[11px] text-emerald-700 font-medium">✓ Pharmacy Pickup OTP verified at Apollo Hub. Cold chain box secured.</p>
                             )}
                           </div>
 
                           {/* Step 2: Customer Delivery OTP (4829) */}
-                          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                             <div className="flex items-center justify-between text-xs">
                               <span className="font-bold text-slate-900">Step 2: Customer Doorstep Delivery Verification</span>
                               {isDelivered ? (
@@ -1623,23 +2179,31 @@ export default function MedicineMVP() {
                             {!isPharmacyPickedUp ? (
                               <p className="text-[11px] text-slate-500 italic">Complete Pharmacy Store Pickup first.</p>
                             ) : !isDelivered ? (
-                              <div className="flex gap-2 pt-1">
-                                <Input
-                                  placeholder="Enter Patient PIN (4829)"
-                                  value={enteredOtp}
-                                  onChange={(e) => setEnteredOtp(e.target.value)}
-                                  maxLength={4}
-                                  className="bg-white border-slate-300 font-mono text-sm font-bold text-slate-900"
-                                />
-                                <Button
-                                  onClick={handleVerifyOtp}
-                                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4"
-                                >
-                                  Verify & Handover
-                                </Button>
+                              <div className="space-y-2 pt-1">
+                                <p className="text-[11px] text-slate-600">
+                                  Ask patient Sarah Chen for the 4-digit Delivery PIN (PIN: {currentOrder?.delivery_otp || "4829"}):
+                                </p>
+                                <div className="flex gap-2">
+                                  <Input
+                                    placeholder={`Enter Patient PIN (${currentOrder?.delivery_otp || "4829"})`}
+                                    value={enteredOtp}
+                                    onChange={(e) => setEnteredOtp(e.target.value)}
+                                    maxLength={4}
+                                    className="bg-white border-slate-300 font-mono text-sm font-bold text-slate-900"
+                                  />
+                                  <Button
+                                    onClick={handleVerifyOtp}
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 shrink-0"
+                                  >
+                                    Verify & Handover ✓
+                                  </Button>
+                                </div>
                               </div>
                             ) : (
-                              <p className="text-[11px] text-emerald-700 font-medium">✓ Customer Delivery OTP (4829) verified. Handover complete.</p>
+                              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-semibold flex items-center justify-between">
+                                <span>✓ Customer Delivery OTP verified. Handover complete.</span>
+                                <span className="font-bold text-emerald-700">+₹65 Credited</span>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -1935,6 +2499,474 @@ export default function MedicineMVP() {
                       );
                     })}
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* TAB CONTENT 5: PURCHASE HISTORY (PATIENT) */}
+            <TabsContent value="purchases" className="mt-8 space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 p-6 rounded-3xl text-white shadow-xl">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-emerald-500 text-white font-bold text-xs uppercase px-2.5 py-0.5">
+                      Patient Invoices & Records
+                    </Badge>
+                    <span className="text-xs text-emerald-300 font-mono">CDSCO Compliant</span>
+                  </div>
+                  <h3 className="text-2xl font-black tracking-tight">Your Previous Medicine Purchases</h3>
+                  <p className="text-xs text-emerald-100/80 max-w-xl">
+                    Review past prescriptions, download GST-compliant medical invoices, inspect 2°C–8°C cold-chain audit logs, and re-order with 1 click.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center">
+                    <span className="text-xs text-emerald-200 block font-bold">Total Orders</span>
+                    <span className="text-xl font-black font-mono">3 Orders</span>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center">
+                    <span className="text-xs text-emerald-200 block font-bold">Generic Savings</span>
+                    <span className="text-xl font-black font-mono text-emerald-300">₹925 Saved</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Purchase History Order Cards */}
+              <div className="space-y-4">
+                {[
+                  {
+                    id: "QM-7821",
+                    date: "Yesterday, 02:45 PM",
+                    pharmacy: "Apollo Express Pharmacy (Raj Nagar Hub)",
+                    pharmacyAddress: "Shop 12, RDC Market, Raj Nagar, Ghaziabad",
+                    items: [
+                      { name: "Lantus Solostar 100IU/ml Insulin Pen", qty: 2, price: 1100, cold: true },
+                      { name: "Janumet 50mg/500mg Tablet (Metformin)", qty: 1, price: 440, cold: false },
+                    ],
+                    total: 1540,
+                    status: "Delivered",
+                    tempLog: "3.6°C (Verified 2°C–8°C Compliant)",
+                    otpVerified: "4829",
+                    rxId: "RX-DELHI-9921",
+                  },
+                  {
+                    id: "QM-6410",
+                    date: "28 Aug 2026, 11:15 AM",
+                    pharmacy: "MedPlus Super Pharmacy (Indirapuram Hub)",
+                    pharmacyAddress: "Plot 44, Kala Patthar Rd, Indirapuram, Ghaziabad",
+                    items: [
+                      { name: "Augmentin 625 Duo (Amoxicillin + Clavulanic)", qty: 1, price: 235, cold: false },
+                      { name: "Dolo 650mg Paracetamol", qty: 2, price: 150, cold: false },
+                    ],
+                    total: 385,
+                    status: "Delivered",
+                    tempLog: "Ambient Safe Room Temp",
+                    otpVerified: "7712",
+                    rxId: "RX-UP-4402",
+                  },
+                  {
+                    id: "QM-5102",
+                    date: "14 Aug 2026, 06:30 PM",
+                    pharmacy: "Apollo Express Pharmacy (Raj Nagar Hub)",
+                    pharmacyAddress: "Shop 12, RDC Market, Raj Nagar, Ghaziabad",
+                    items: [
+                      { name: "Human Mixtard 30/70 100IU/ml Cartridge", qty: 1, price: 620, cold: true },
+                      { name: "Amaryl 2mg (Glimepiride)", qty: 1, price: 300, cold: false },
+                    ],
+                    total: 920,
+                    status: "Delivered",
+                    tempLog: "4.1°C (Verified 2°C–8°C Compliant)",
+                    otpVerified: "9103",
+                    rxId: "RX-UP-1892",
+                  },
+                ].map((order) => (
+                  <Card key={order.id} className="bg-white border-slate-200 shadow-xs hover:shadow-md transition-shadow">
+                    <CardHeader className="pb-3 border-b border-slate-100">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-mono font-black text-sm text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                            {order.id}
+                          </span>
+                          <span className="text-xs text-slate-500 font-medium">{order.date}</span>
+                          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px] font-bold">
+                            ✓ {order.status}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500">Total Paid:</span>
+                          <span className="font-mono font-black text-base text-slate-900">₹{order.total}</span>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                        <div className="space-y-2 flex-1">
+                          <div className="text-xs text-slate-600 flex items-center gap-1.5">
+                            <Building2 className="w-3.5 h-3.5 text-slate-500" />
+                            <strong className="text-slate-800">{order.pharmacy}</strong>
+                            <span className="text-slate-400">• {order.pharmacyAddress}</span>
+                          </div>
+
+                          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                            {order.items.map((item, idx) => (
+                              <div key={idx} className="flex items-center justify-between text-xs">
+                                <div className="flex items-center gap-2">
+                                  <Pill className="w-3.5 h-3.5 text-emerald-600" />
+                                  <span className="font-bold text-slate-800">{item.name}</span>
+                                  <span className="text-slate-500 font-medium">× {item.qty}</span>
+                                  {item.cold && (
+                                    <Badge variant="outline" className="text-[9px] border-cyan-300 text-cyan-800 bg-cyan-50 py-0">
+                                      ❄️ 2°C–8°C
+                                    </Badge>
+                                  )}
+                                </div>
+                                <span className="font-mono font-bold text-slate-700">₹{item.price}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Cold Chain & OTP telemetry stamp */}
+                          <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+                            <span className="flex items-center gap-1 text-cyan-800 bg-cyan-50 px-2 py-0.5 rounded-md border border-cyan-200 font-medium">
+                              <Thermometer className="w-3 h-3 text-cyan-600" /> {order.tempLog}
+                            </span>
+                            <span className="flex items-center gap-1 text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md font-mono">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> OTP {order.otpVerified} Verified
+                            </span>
+                            <span className="text-slate-400">Rx ID: {order.rxId}</span>
+                          </div>
+                        </div>
+
+                        {/* Order Actions */}
+                        <div className="flex sm:flex-col gap-2 shrink-0">
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              order.items.forEach((it) => {
+                                addToCart({
+                                  id: `reorder-${it.name.toLowerCase().replace(/\s+/g, "-")}`,
+                                  name: it.name,
+                                  genericName: "Prescribed Formula",
+                                  price: it.price / it.qty,
+                                  requiresColdChain: it.cold,
+                                });
+                              });
+                              setIsCartModalOpen(true);
+                              toast.success(`Items from order ${order.id} re-added to Cart!`);
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs"
+                          >
+                            <ShoppingCart className="w-3.5 h-3.5 mr-1" /> 1-Click Re-Order
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              toast.success(`Official GST Tax Invoice for ${order.id} downloaded!`);
+                            }}
+                            className="border-slate-300 text-slate-700 hover:bg-slate-100 text-xs font-semibold"
+                          >
+                            <Download className="w-3.5 h-3.5 mr-1" /> Download Invoice
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            {/* TAB CONTENT: DELIVERY HISTORY (RIDER) */}
+            <TabsContent value="rider-history" className="mt-8 space-y-6">
+              <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-emerald-950 p-6 rounded-3xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-cyan-500 text-slate-950 font-bold text-xs uppercase px-2.5 py-0.5">
+                      Courier Dispatch Log
+                    </Badge>
+                    <span className="text-xs text-cyan-300 font-mono">EV Cold-Box Fleet</span>
+                  </div>
+                  <h3 className="text-2xl font-black tracking-tight mt-1">Completed Delivery Runs</h3>
+                  <p className="text-xs text-cyan-100/80 max-w-xl">
+                    Historical log of completed hyperlocal deliveries across Ghaziabad, cold-chain compliance certificates, and rider earnings.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/20 text-center">
+                    <span className="text-[10px] text-cyan-200 block font-bold uppercase">Trips Done</span>
+                    <span className="text-lg font-black font-mono">48</span>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/20 text-center">
+                    <span className="text-[10px] text-cyan-200 block font-bold uppercase">Total Payout</span>
+                    <span className="text-lg font-black font-mono text-emerald-300">₹3,840</span>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/20 text-center">
+                    <span className="text-[10px] text-cyan-200 block font-bold uppercase">Avg Time</span>
+                    <span className="text-lg font-black font-mono">26m</span>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-md p-2.5 rounded-xl border border-white/20 text-center">
+                    <span className="text-[10px] text-cyan-200 block font-bold uppercase">Cold Chain</span>
+                    <span className="text-lg font-black font-mono text-cyan-300">100%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rider Shift Trips Table */}
+              <Card className="bg-white border-slate-200 shadow-xs">
+                <CardHeader className="pb-3 border-b border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                      <Truck className="w-5 h-5 text-emerald-600" /> Delivery Trip Archive
+                    </CardTitle>
+                    <Badge variant="outline" className="border-emerald-300 text-emerald-800 bg-emerald-50 text-xs">
+                      Ghaziabad Operational Zone
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-3">
+                  {[
+                    {
+                      tripId: "DL-9821",
+                      customer: "Sarah Chen",
+                      address: "Flat 402, Shipra Sun City, Indirapuram",
+                      medicines: "Lantus Solostar Pen & Janumet",
+                      distance: "4.2 km",
+                      duration: "24 mins",
+                      payout: 85,
+                      otp: "4829",
+                      tempAvg: "3.6°C",
+                      completedAt: "Yesterday, 03:09 PM",
+                    },
+                    {
+                      tripId: "DL-9750",
+                      customer: "Amit Verma",
+                      address: "Tower B, Raj Nagar Extension, Ghaziabad",
+                      medicines: "Cardiac Support Care Kit",
+                      distance: "6.8 km",
+                      duration: "31 mins",
+                      payout: 95,
+                      otp: "6192",
+                      tempAvg: "Ambient (24°C)",
+                      completedAt: "Yesterday, 12:42 PM",
+                    },
+                    {
+                      tripId: "DL-9620",
+                      customer: "Neha Sharma",
+                      address: "Sector 4, Vasundhara, Ghaziabad",
+                      medicines: "Insulin Glargine & Sterile Syringes",
+                      distance: "5.1 km",
+                      duration: "28 mins",
+                      payout: 90,
+                      otp: "8831",
+                      tempAvg: "4.1°C",
+                      completedAt: "28 Aug 2026, 05:20 PM",
+                    },
+                    {
+                      tripId: "DL-9410",
+                      customer: "Rajesh Khanna",
+                      address: "Block C, Kavi Nagar, Ghaziabad",
+                      medicines: "Augmentin Duo & Multivitamins",
+                      distance: "3.4 km",
+                      duration: "21 mins",
+                      payout: 80,
+                      otp: "2201",
+                      tempAvg: "Ambient",
+                      completedAt: "28 Aug 2026, 01:10 PM",
+                    },
+                  ].map((trip) => (
+                    <div key={trip.tripId} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 hover:border-emerald-300 transition-colors">
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono font-bold text-xs bg-slate-200 text-slate-800 px-2 py-0.5 rounded">
+                            #{trip.tripId}
+                          </span>
+                          <strong className="text-slate-900 text-sm">{trip.customer}</strong>
+                          <span className="text-xs text-slate-500">• {trip.address}</span>
+                        </div>
+                        <p className="text-xs text-slate-600 font-medium">{trip.medicines}</p>
+                        <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500 pt-1">
+                          <span>⏱️ {trip.duration} ({trip.distance})</span>
+                          <span className="font-mono text-cyan-800 bg-cyan-50 px-1.5 py-0.5 rounded border border-cyan-200">
+                            ❄️ {trip.tempAvg}
+                          </span>
+                          <span className="font-mono text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                            ✓ OTP {trip.otp}
+                          </span>
+                          <span className="text-slate-400">{trip.completedAt}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between md:justify-end gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-0 border-slate-200">
+                        <div className="text-right">
+                          <span className="text-[10px] text-slate-500 uppercase block font-bold">Rider Payout</span>
+                          <span className="font-mono font-black text-emerald-700 text-base">₹{trip.payout}</span>
+                        </div>
+                        <Badge className="bg-emerald-600 text-white font-bold text-xs px-2.5 py-1">
+                          Completed ✓
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* TAB CONTENT: CUSTOMER ORDERS DIRECTORY (PHARMACY & ADMIN) */}
+            <TabsContent value="customer-orders" className="mt-8 space-y-6">
+              <div className="bg-gradient-to-r from-teal-900 via-emerald-950 to-slate-950 p-6 rounded-3xl text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-emerald-500 text-white font-bold text-xs uppercase px-2.5 py-0.5">
+                      Customer Directory & Order History
+                    </Badge>
+                    <span className="text-xs text-emerald-300 font-mono">Store Fulfillment CRM</span>
+                  </div>
+                  <h3 className="text-2xl font-black tracking-tight mt-1">Prescription Customer Records</h3>
+                  <p className="text-xs text-emerald-100/80 max-w-xl">
+                    Full registry of patients, verified prescription documents, order fulfillment statuses, and courier handover audit trails.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center">
+                    <span className="text-xs text-emerald-200 block font-bold">Active Customers</span>
+                    <span className="text-xl font-black font-mono">4 Patients</span>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center">
+                    <span className="text-xs text-emerald-200 block font-bold">Rx Fulfillments</span>
+                    <span className="text-xl font-black font-mono text-emerald-300">12 Orders</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Records Table */}
+              <Card className="bg-white border-slate-200 shadow-xs">
+                <CardHeader className="pb-3 border-b border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-emerald-600" /> Patient Order Fulfillment Roster
+                      </CardTitle>
+                      <CardDescription className="text-xs text-slate-500 mt-0.5">
+                        Licensed retail pharmacies must retain digital order records under CDSCO Schedule H regulations.
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-4">
+                  {[
+                    {
+                      name: "Sarah Chen",
+                      phone: "+91 98765 43210",
+                      email: "sarah.chen@arogyaswift.in",
+                      address: "Flat 402, Shipra Sun City, Indirapuram, Ghaziabad",
+                      orderId: "QM-7821",
+                      totalAmount: 1540,
+                      medicines: "Lantus Solostar 100IU/ml Pen, Janumet 50/500mg",
+                      rxVerified: "CDSCO Verified #UP-7721",
+                      status: "Delivered",
+                      deliveryRider: "Ramesh K. (KA-01-EV-9821)",
+                      date: "02 Sep 2026",
+                    },
+                    {
+                      name: "Amit Verma",
+                      phone: "+91 98765 22334",
+                      email: "amit.verma@gmail.com",
+                      address: "Tower B, Raj Nagar Extension, Ghaziabad",
+                      orderId: "QM-9750",
+                      totalAmount: 680,
+                      medicines: "Ecosprin 75mg, Atorva 20mg, Sorbitrate 5mg",
+                      rxVerified: "CDSCO Verified #UP-4491",
+                      status: "Delivered",
+                      deliveryRider: "Suresh P. (KA-01-EV-4412)",
+                      date: "01 Sep 2026",
+                    },
+                    {
+                      name: "Neha Sharma",
+                      phone: "+91 98765 33445",
+                      email: "neha.sharma@outlook.com",
+                      address: "Sector 4, Vasundhara, Ghaziabad",
+                      orderId: "QM-9620",
+                      totalAmount: 920,
+                      medicines: "Insulin Glargine 100IU Cartridge, BD Syringes",
+                      rxVerified: "CDSCO Verified #UP-8812",
+                      status: "Delivered",
+                      deliveryRider: "Ramesh K. (KA-01-EV-9821)",
+                      date: "28 Aug 2026",
+                    },
+                    {
+                      name: "Rajesh Khanna",
+                      phone: "+91 98765 99112",
+                      email: "rajesh.khanna@yahoo.com",
+                      address: "Block C, Kavi Nagar, Ghaziabad",
+                      orderId: "QM-6410",
+                      totalAmount: 385,
+                      medicines: "Augmentin 625 Duo, Dolo 650mg Paracetamol",
+                      rxVerified: "CDSCO Verified #UP-1102",
+                      status: "Delivered",
+                      deliveryRider: "Vikram S. (KA-01-EV-7721)",
+                      date: "28 Aug 2026",
+                    },
+                  ].map((cust, idx) => (
+                    <div key={idx} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 hover:border-emerald-300 transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-2.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-black text-sm flex items-center justify-center border border-emerald-300">
+                            {cust.name.split(" ").map((n) => n[0]).join("")}
+                          </div>
+                          <div>
+                            <h4 className="font-extrabold text-slate-900 text-sm">{cust.name}</h4>
+                            <p className="text-xs text-slate-500">{cust.phone} • {cust.email}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500">Order:</span>
+                          <span className="font-mono font-bold text-xs bg-slate-200 text-slate-800 px-2 py-0.5 rounded">{cust.orderId}</span>
+                          <Badge className="bg-emerald-600 text-white text-xs font-bold px-2.5 py-0.5">
+                            {cust.status} ✓
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-3 gap-3 text-xs">
+                        <div className="space-y-1">
+                          <span className="text-[10px] uppercase font-bold text-slate-500 block">Delivery Address</span>
+                          <p className="text-slate-800 font-medium">{cust.address}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[10px] uppercase font-bold text-slate-500 block">Dispensed Medicines</span>
+                          <p className="text-slate-800 font-semibold">{cust.medicines}</p>
+                          <span className="text-emerald-700 font-bold block">Paid: ₹{cust.totalAmount}</span>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[10px] uppercase font-bold text-slate-500 block">Fulfillment Audit</span>
+                          <p className="text-slate-700 font-mono">{cust.rxVerified}</p>
+                          <p className="text-slate-500 text-[11px]">Courier: {cust.deliveryRider}</p>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex items-center justify-between text-xs border-t border-slate-200/60">
+                        <span className="text-slate-500 text-[11px]">Fulfilled on: {cust.date}</span>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              toast.success(`Opening CDSCO Rx File for ${cust.name}`);
+                              setIsPreviewModalOpen(true);
+                            }}
+                            className="h-7 text-xs border-slate-300 text-slate-700 hover:bg-slate-100"
+                          >
+                            <Eye className="w-3 h-3 mr-1" /> View Prescription
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => toast.info(`Printing CDSCO Pharmacy Dispense Slip for ${cust.orderId}`)}
+                            className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                          >
+                            <Printer className="w-3 h-3 mr-1" /> Print Slip
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -2421,7 +3453,7 @@ export default function MedicineMVP() {
         </DialogContent>
       </Dialog>
 
-      {/* QUICKMED SHOPPING CART MODAL */}
+      {/* AROGYASWIFT SHOPPING CART MODAL */}
       <Dialog open={isCartModalOpen} onOpenChange={setIsCartModalOpen}>
         <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white text-slate-900 border-slate-200 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl">
           <DialogHeader className="border-b border-slate-100 pb-4 space-y-1">
@@ -2521,7 +3553,7 @@ export default function MedicineMVP() {
               {cartItems.some((i) => i.requiresColdChain) && (
                 <div className="p-3 bg-cyan-50 border border-cyan-200 rounded-xl text-xs text-cyan-900 flex items-center gap-2">
                   <Thermometer className="w-4 h-4 text-cyan-600 shrink-0" />
-                  <span>Includes insulated cold-storage items (2°C–8°C). QuickMed temperature telemetry active.</span>
+                  <span>Includes insulated cold-storage items (2°C–8°C). ArogyaSwift temperature telemetry active.</span>
                 </div>
               )}
 
@@ -2556,6 +3588,163 @@ export default function MedicineMVP() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Comprehensive Legal, Compliance & Support Footer */}
+      <footer className="bg-slate-900 text-white border-t border-slate-800 pt-12 pb-8 text-xs mt-12">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 pb-10 border-b border-slate-800">
+            {/* Col 1: Brand */}
+            <div className="col-span-2 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-emerald-600 rounded-lg text-white">
+                  <Pill className="w-4 h-4" />
+                </div>
+                <span className="font-extrabold text-base text-white tracking-tight">ArogyaSwift</span>
+                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[9px]">
+                  Licensed Network
+                </Badge>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+                Hyperlocal cold-chain pharmaceutical delivery network. 10–15 minute express dispatch with 2-step OTP chain of custody and CDSCO Schedule H compliance.
+              </p>
+              <div className="pt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                <span>CDSCO Compliant</span> • <span>DPDP Act 2023</span> • <span>Drugs & Cosmetics Act 1940</span>
+              </div>
+            </div>
+
+            {/* Col 2: Legal & Governance */}
+            <div className="space-y-2.5">
+              <span className="font-bold text-slate-200 text-xs uppercase tracking-wider block">Legal & Governance</span>
+              <ul className="space-y-1.5 text-xs text-slate-400">
+                <li>
+                  <button onClick={() => openLegalPolicy("privacy")} className="hover:text-emerald-400 text-left transition-colors">
+                    Privacy Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("terms")} className="hover:text-emerald-400 text-left transition-colors">
+                    Terms of Service
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("dpa")} className="hover:text-emerald-400 text-left transition-colors">
+                    Data Processing Agreement (DPA)
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("acceptable-use")} className="hover:text-emerald-400 text-left transition-colors">
+                    Acceptable Use Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("disclaimer")} className="hover:text-emerald-400 text-left transition-colors">
+                    Medical Disclaimer
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("accessibility")} className="hover:text-emerald-400 text-left transition-colors">
+                    Accessibility Statement
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 3: Logistics & SLAs */}
+            <div className="space-y-2.5">
+              <span className="font-bold text-slate-200 text-xs uppercase tracking-wider block">Logistics & SLAs</span>
+              <ul className="space-y-1.5 text-xs text-slate-400">
+                <li>
+                  <button onClick={() => openLegalPolicy("shipping")} className="hover:text-emerald-400 text-left transition-colors">
+                    Shipping & Delivery Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("refund")} className="hover:text-emerald-400 text-left transition-colors">
+                    100% Refund Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("cancellation")} className="hover:text-emerald-400 text-left transition-colors">
+                    Cancellation Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("return-exchange")} className="hover:text-emerald-400 text-left transition-colors">
+                    Return & Exchange Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("customer-lifecycle")} className="hover:text-emerald-400 text-left transition-colors">
+                    Customer Lifecycle Guide
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 4: Security & Support */}
+            <div className="space-y-2.5">
+              <span className="font-bold text-slate-200 text-xs uppercase tracking-wider block">Security & Help</span>
+              <ul className="space-y-1.5 text-xs text-slate-400">
+                <li>
+                  <button onClick={() => openLegalPolicy("security")} className="hover:text-emerald-400 text-left transition-colors">
+                    Security Policy & Architecture
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("responsible-disclosure")} className="hover:text-emerald-400 text-left transition-colors">
+                    Responsible Disclosure
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("cookie")} className="hover:text-emerald-400 text-left transition-colors">
+                    Cookie Policy
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setIsCookiePreferencesOpen(true)} className="hover:text-emerald-400 text-left transition-colors font-semibold text-emerald-400">
+                    ⚙️ Cookie Preferences
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => openLegalPolicy("community-guidelines")} className="hover:text-emerald-400 text-left transition-colors">
+                    Community Guidelines
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setIsHelpCenterOpen(true)} className="hover:text-emerald-400 text-left transition-colors font-semibold text-emerald-300">
+                    Help Center & FAQs
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Sub-Footer */}
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <div>
+              © 2026 ArogyaSwift Healthcare Technologies Inc. All rights reserved. Registered under Drugs and Cosmetics Act.
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsAccountSettingsOpen(true)}
+                className="text-slate-400 hover:text-emerald-400 transition-colors"
+              >
+                Account Settings
+              </button>
+              •
+              <button
+                type="button"
+                onClick={() => setIsHelpCenterOpen(true)}
+                className="text-slate-400 hover:text-emerald-400 transition-colors"
+              >
+                Support Center
+              </button>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -73,7 +73,7 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
     id: "u-rider-303",
     name: "Vikram Singh",
     role: "rider",
-    email: "vikram.rider@quickmed.in",
+    email: "vikram.rider@arogyaswift.in",
     phone: "+91 98765 99887",
     badge: "Express Courier #R-4402",
     avatar: "🏍️",
@@ -83,9 +83,9 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
   },
   admin: {
     id: "u-admin-999",
-    name: "QuickMed Compliance Officer (App Owner)",
+    name: "ArogyaSwift Compliance Officer (App Owner)",
     role: "admin",
-    email: "compliance@quickmed.in",
+    email: "compliance@arogyaswift.in",
     phone: "+91 120 4991200",
     badge: "Super Admin #SA-001",
     avatar: "👑",
@@ -94,11 +94,85 @@ export const PRESET_USERS: Record<UserRole, UserSession> = {
   }
 };
 
+export interface OrderTimelineItem {
+  stage: string;
+  title: string;
+  time: string;
+  desc: string;
+}
+
+export interface OrderItem {
+  id: string;
+  name: string;
+  genericName?: string;
+  price: number;
+  quantity: number;
+  requiresColdChain?: boolean;
+  dosage?: string;
+}
+
+export type OrderStatus =
+  | "placed"
+  | "confirmed_preparing"
+  | "ready_to_dispatch"
+  | "searching_rider"
+  | "rider_assigned"
+  | "at_pharmacy"
+  | "picked_up"
+  | "out_for_delivery"
+  | "delivered"
+  | "cancelled";
+
+export interface ActiveOrder {
+  id: string;
+  patient_id: string;
+  patient_name: string;
+  patient_phone: string;
+  patient_address: string;
+  pharmacy_id: string;
+  pharmacy_name: string;
+  pharmacy_address?: string;
+  pharmacy_phone?: string;
+  rider_id?: string;
+  rider_name?: string;
+  rider_phone?: string;
+  rider_vehicle?: string;
+  items: OrderItem[];
+  status: OrderStatus;
+  pickup_otp: string;
+  delivery_otp: string;
+  total_amount: number;
+  delivery_fee: number;
+  is_emergency: number | boolean;
+  timeline: OrderTimelineItem[];
+  created_at: string;
+  updated_at?: string;
+}
+
+export type LegalPolicyId =
+  | "privacy"
+  | "terms"
+  | "cookie"
+  | "cookie-preferences"
+  | "refund"
+  | "cancellation"
+  | "shipping"
+  | "return-exchange"
+  | "disclaimer"
+  | "accessibility"
+  | "dpa"
+  | "acceptable-use"
+  | "security"
+  | "responsible-disclosure"
+  | "community-guidelines"
+  | "customer-lifecycle";
+
 interface AuthContextType {
   user: UserSession;
   token: string | null;
   isAuthenticated: boolean;
   loginAsRole: (role: UserRole) => void;
+  quickSwitchRole: (role: UserRole) => void;
   loginWithCustom: (name: string, role: UserRole, email: string) => Promise<void>;
   registerPharmacyStore: (store: Omit<PharmacyStoreData, "id" | "distance" | "rating" | "stockMatched" | "etaMinutes"> & { verificationStatus?: "approved" | "pending" | "rejected" }) => Promise<void>;
   approvePharmacyStore: (storeId: string) => Promise<void>;
@@ -107,6 +181,41 @@ interface AuthContextType {
   registeredPharmacies: PharmacyStoreData[];
   logout: () => void;
 
+  // Order Lifecycle Management
+  orders: ActiveOrder[];
+  currentOrder: ActiveOrder | null;
+  setCurrentOrder: (order: ActiveOrder | null) => void;
+  fetchOrders: () => Promise<void>;
+  createOrder: (orderData: {
+    patientId?: string;
+    patientName?: string;
+    patientPhone?: string;
+    patientAddress?: string;
+    pharmacyId: string;
+    pharmacyName: string;
+    pharmacyAddress?: string;
+    pharmacyPhone?: string;
+    items: OrderItem[];
+    totalAmount: number;
+    deliveryFee?: number;
+    isEmergency?: boolean;
+  }) => Promise<ActiveOrder | null>;
+  updateOrderStatus: (
+    orderId: string,
+    status: OrderStatus,
+    extra?: {
+      riderId?: string;
+      riderName?: string;
+      riderPhone?: string;
+      riderVehicle?: string;
+      pharmacistNote?: string;
+    }
+  ) => Promise<ActiveOrder | null>;
+  verifyPickupOtp: (orderId: string, enteredPickupOtp: string) => Promise<{ success: boolean; message?: string; error?: string; order?: ActiveOrder }>;
+  verifyDeliveryOtp: (orderId: string, enteredDeliveryOtp: string) => Promise<{ success: boolean; message?: string; error?: string; order?: ActiveOrder }>;
+  resetDemoOrder: () => Promise<void>;
+
+  // Modals & UI Controls
   isAuthModalOpen: boolean;
   setIsAuthModalOpen: (open: boolean) => void;
   authModalRole: UserRole;
@@ -119,13 +228,34 @@ interface AuthContextType {
   setIsPhoneSignupModalOpen: (open: boolean) => void;
   phoneSignupRole: "patient" | "rider";
   setPhoneSignupRole: (role: "patient" | "rider") => void;
+  isDemoModalOpen: boolean;
+  setIsDemoModalOpen: (open: boolean) => void;
+
+  // Legal & Customer Lifecycle Modals
+  isLegalModalOpen: boolean;
+  setIsLegalModalOpen: (open: boolean) => void;
+  legalModalTab: LegalPolicyId;
+  setLegalModalTab: (tab: LegalPolicyId) => void;
+  openLegalPolicy: (policyId: LegalPolicyId) => void;
+  isCookiePreferencesOpen: boolean;
+  setIsCookiePreferencesOpen: (open: boolean) => void;
+  isOnboardingOpen: boolean;
+  setIsOnboardingOpen: (open: boolean) => void;
+  isAccountSettingsOpen: boolean;
+  setIsAccountSettingsOpen: (open: boolean) => void;
+  isHelpCenterOpen: boolean;
+  setIsHelpCenterOpen: (open: boolean) => void;
+  isEmailVerifyOpen: boolean;
+  setIsEmailVerifyOpen: (open: boolean) => void;
+  isPasswordResetOpen: boolean;
+  setIsPasswordResetOpen: (open: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserSession>(PRESET_USERS.patient);
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem("quickmed_jwt"));
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("arogyaswift_jwt"));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalRole, setAuthModalRole] = useState<UserRole>("patient");
@@ -133,6 +263,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isPharmacyRegisterModalOpen, setIsPharmacyRegisterModalOpen] = useState(false);
   const [isPhoneSignupModalOpen, setIsPhoneSignupModalOpen] = useState(false);
   const [phoneSignupRole, setPhoneSignupRole] = useState<"patient" | "rider">("patient");
+  const [orders, setOrders] = useState<ActiveOrder[]>([]);
+  const [currentOrder, setCurrentOrder] = useState<ActiveOrder | null>(null);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+
+  // Legal and lifecycle state
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [legalModalTab, setLegalModalTab] = useState<LegalPolicyId>("privacy");
+  const [isCookiePreferencesOpen, setIsCookiePreferencesOpen] = useState(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [isAccountSettingsOpen, setIsAccountSettingsOpen] = useState(false);
+  const [isHelpCenterOpen, setIsHelpCenterOpen] = useState(false);
+  const [isEmailVerifyOpen, setIsEmailVerifyOpen] = useState(false);
+  const [isPasswordResetOpen, setIsPasswordResetOpen] = useState(false);
+
+  const openLegalPolicy = (policyId: LegalPolicyId) => {
+    setLegalModalTab(policyId);
+    setIsLegalModalOpen(true);
+  };
 
   const [registeredPharmacies, setRegisteredPharmacies] = useState<PharmacyStoreData[]>([
     {
@@ -224,7 +372,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       if (res.ok && data.token) {
         setToken(data.token);
-        localStorage.setItem("quickmed_jwt", data.token);
+        localStorage.setItem("arogyaswift_jwt", data.token);
         setUser(data.user);
       } else {
         setUser({
@@ -371,7 +519,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       name: data.name,
       role: data.role,
       phone: formattedPhone,
-      email: data.email || `${data.phone}@quickmed.in`,
+      email: data.email || `${data.phone}@arogyaswift.in`,
       badge: data.role === "patient" ? `Patient #${Math.floor(1000 + Math.random() * 9000)}` : `Rider #${Math.floor(1000 + Math.random() * 9000)}`,
       avatar: data.role === "patient" ? "👩‍💼" : "🏍️",
       vehicleType: data.vehicleType,
@@ -382,8 +530,160 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsPhoneSignupModalOpen(false);
   };
 
+  const quickSwitchRole = (role: UserRole) => {
+    setUser(PRESET_USERS[role]);
+    setIsAuthenticated(true);
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch("/api/orders");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.orders && Array.isArray(data.orders)) {
+          setOrders(data.orders);
+          if (data.orders.length > 0) {
+            setCurrentOrder((prev) => {
+              if (!prev) return data.orders[0];
+              const updated = data.orders.find((o: ActiveOrder) => o.id === prev.id);
+              return updated || data.orders[0];
+            });
+          } else {
+            // Auto seed demo order if empty
+            await fetch("/api/orders/seed-demo", { method: "POST" });
+            const seedRes = await fetch("/api/orders");
+            const seedData = await seedRes.json();
+            if (seedData.orders && seedData.orders.length > 0) {
+              setOrders(seedData.orders);
+              setCurrentOrder(seedData.orders[0]);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.log("Orders sync note:", err);
+    }
+  };
+
+  // Sync orders on mount and periodically every 2.5s for multi-portal synchronization
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
+  const createOrder = async (orderData: {
+    patientId?: string;
+    patientName?: string;
+    patientPhone?: string;
+    patientAddress?: string;
+    pharmacyId: string;
+    pharmacyName: string;
+    pharmacyAddress?: string;
+    pharmacyPhone?: string;
+    items: OrderItem[];
+    totalAmount: number;
+    deliveryFee?: number;
+    isEmergency?: boolean;
+  }): Promise<ActiveOrder | null> => {
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData),
+      });
+      const data = await res.json();
+      if (res.ok && data.order) {
+        setOrders((prev) => [data.order, ...prev]);
+        setCurrentOrder(data.order);
+        return data.order;
+      }
+      return null;
+    } catch (err) {
+      console.error("Create order failed:", err);
+      return null;
+    }
+  };
+
+  const updateOrderStatus = async (
+    orderId: string,
+    status: OrderStatus,
+    extra?: {
+      riderId?: string;
+      riderName?: string;
+      riderPhone?: string;
+      riderVehicle?: string;
+      pharmacistNote?: string;
+    }
+  ): Promise<ActiveOrder | null> => {
+    try {
+      const res = await fetch(`/api/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, ...extra }),
+      });
+      const data = await res.json();
+      if (res.ok && data.order) {
+        setOrders((prev) => prev.map((o) => (o.id === orderId ? data.order : o)));
+        setCurrentOrder(data.order);
+        return data.order;
+      }
+      return null;
+    } catch (err) {
+      console.error("Update order status failed:", err);
+      return null;
+    }
+  };
+
+  const verifyPickupOtp = async (orderId: string, enteredPickupOtp: string) => {
+    try {
+      const res = await fetch(`/api/orders/${orderId}/verify-pickup-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enteredPickupOtp }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOrders((prev) => prev.map((o) => (o.id === orderId ? data.order : o)));
+        setCurrentOrder(data.order);
+        return { success: true, message: data.message, order: data.order };
+      }
+      return { success: false, error: data.error || "Invalid Pickup OTP" };
+    } catch (err: any) {
+      return { success: false, error: err.message || "Pickup verification failed" };
+    }
+  };
+
+  const verifyDeliveryOtp = async (orderId: string, enteredDeliveryOtp: string) => {
+    try {
+      const res = await fetch(`/api/orders/${orderId}/verify-delivery-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enteredDeliveryOtp }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOrders((prev) => prev.map((o) => (o.id === orderId ? data.order : o)));
+        setCurrentOrder(data.order);
+        return { success: true, message: data.message, order: data.order };
+      }
+      return { success: false, error: data.error || "Invalid Delivery OTP" };
+    } catch (err: any) {
+      return { success: false, error: err.message || "Delivery verification failed" };
+    }
+  };
+
+  const resetDemoOrder = async () => {
+    try {
+      await fetch("/api/orders/seed-demo", { method: "POST" });
+      await fetchOrders();
+    } catch (err) {
+      console.error("Reset demo order failed:", err);
+    }
+  };
+
   const logout = () => {
-    localStorage.removeItem("quickmed_jwt");
+    localStorage.removeItem("arogyaswift_jwt");
     setToken(null);
     setIsAuthenticated(false);
     setUser(PRESET_USERS.patient);
@@ -396,6 +696,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         isAuthenticated,
         loginAsRole,
+        quickSwitchRole,
         loginWithCustom,
         registerPharmacyStore,
         approvePharmacyStore,
@@ -403,6 +704,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         registerUserWithPhone,
         registeredPharmacies,
         logout,
+
+        // Order Lifecycle Management
+        orders,
+        currentOrder,
+        setCurrentOrder,
+        fetchOrders,
+        createOrder,
+        updateOrderStatus,
+        verifyPickupOtp,
+        verifyDeliveryOtp,
+        resetDemoOrder,
 
         isAuthModalOpen,
         setIsAuthModalOpen,
@@ -415,7 +727,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isPhoneSignupModalOpen,
         setIsPhoneSignupModalOpen,
         phoneSignupRole,
-        setPhoneSignupRole
+        setPhoneSignupRole,
+        isDemoModalOpen,
+        setIsDemoModalOpen,
+
+        // Legal & Lifecycle Modals
+        isLegalModalOpen,
+        setIsLegalModalOpen,
+        legalModalTab,
+        setLegalModalTab,
+        openLegalPolicy,
+        isCookiePreferencesOpen,
+        setIsCookiePreferencesOpen,
+        isOnboardingOpen,
+        setIsOnboardingOpen,
+        isAccountSettingsOpen,
+        setIsAccountSettingsOpen,
+        isHelpCenterOpen,
+        setIsHelpCenterOpen,
+        isEmailVerifyOpen,
+        setIsEmailVerifyOpen,
+        isPasswordResetOpen,
+        setIsPasswordResetOpen,
       }}
     >
       {children}

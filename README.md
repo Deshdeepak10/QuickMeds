@@ -1,4 +1,4 @@
-# 💊 QuickMed — Hyperlocal Medicine Delivery & Cold-Chain Logistics Blueprint
+# 💊 ArogyaSwift — Hyperlocal Medicine Delivery & Cold-Chain Logistics Blueprint
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![React 19](https://img.shields.io/badge/React-19.2.1-blue.svg)](https://react.dev/)
@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
 [![Vercel Deployed](https://img.shields.io/badge/Vercel-Deployed-black.svg)](https://vercel.com/)
 
-**QuickMed** is a state-of-the-art hyperlocal medicine delivery platform blueprint built for CDSCO-compliant pharmaceutical fulfillment, cold-chain temperature telemetry monitoring (2°C–8°C), 3 Hours Minimum Standard Delivery, Emergency Express Direct Store Hotline dispatch, and multi-role operations across Patients, Licensed Pharmacy Partners, Delivery Riders, and App Owners.
+**ArogyaSwift** is a state-of-the-art hyperlocal medicine delivery platform blueprint built for CDSCO-compliant pharmaceutical fulfillment, cold-chain temperature telemetry monitoring (2°C–8°C), 3 Hours Minimum Standard Delivery, Emergency Express Direct Store Hotline dispatch, and multi-role operations across Patients, Licensed Pharmacy Partners, Delivery Riders, and App Owners.
 
 ---
 
@@ -67,7 +67,7 @@
 ## 📐 Project Structure
 
 ```
-QuickMeds/
+ArogyaSwift/
 ├── api/                   # Vercel Serverless Entry Points
 │   └── index.ts
 ├── client/                # React 19 Frontend SPA

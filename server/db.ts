@@ -7,7 +7,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // DB File Path
-const dbPath = process.env.DATABASE_URL || path.join(__dirname, "..", "quickmed.db");
+const dbPath =
+  process.env.DATABASE_URL ||
+  (process.env.VERCEL ? path.join("/tmp", "arogyaswift.db") : path.join(__dirname, "..", "arogyaswift.db"));
 
 // Initialize Database Instance
 export const db = new Database(dbPath);
@@ -16,7 +18,9 @@ db.pragma("journal_mode = WAL");
 // Initialize Tables
 export function initDb() {
   // Ensure uploads folder exists
-  const uploadsDir = path.join(__dirname, "..", "uploads", "prescriptions");
+  const uploadsDir = process.env.VERCEL
+    ? path.join("/tmp", "uploads", "prescriptions")
+    : path.join(__dirname, "..", "uploads", "prescriptions");
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
@@ -93,14 +97,61 @@ export function initDb() {
     CREATE TABLE IF NOT EXISTS orders (
       id TEXT PRIMARY KEY,
       patient_id TEXT NOT NULL,
+      patient_name TEXT,
+      patient_phone TEXT,
+      patient_address TEXT,
       pharmacy_id TEXT NOT NULL,
+      pharmacy_name TEXT,
+      pharmacy_address TEXT,
+      pharmacy_phone TEXT,
+      rider_id TEXT,
+      rider_name TEXT,
+      rider_phone TEXT,
+      rider_vehicle TEXT,
       items_json TEXT NOT NULL,
       status TEXT DEFAULT 'placed',
-      otp_code TEXT,
+      pickup_otp TEXT DEFAULT '8514',
+      delivery_otp TEXT DEFAULT '4829',
       total_amount REAL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      delivery_fee REAL DEFAULT 35,
+      is_emergency INTEGER DEFAULT 0,
+      timeline_json TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
-  console.log("✅ SQLite Database initialized successfully at:", dbPath);
+  // Safely ensure new columns exist if orders table was already created in SQLite
+  const existingOrderColumns = (db.prepare("PRAGMA table_info(orders)").all() as any[]).map((c) => c.name);
+  const requiredColumns: { name: string; type: string; dflt?: string }[] = [
+    { name: "patient_name", type: "TEXT" },
+    { name: "patient_phone", type: "TEXT" },
+    { name: "patient_address", type: "TEXT" },
+    { name: "pharmacy_name", type: "TEXT" },
+    { name: "pharmacy_address", type: "TEXT" },
+    { name: "pharmacy_phone", type: "TEXT" },
+    { name: "rider_id", type: "TEXT" },
+    { name: "rider_name", type: "TEXT" },
+    { name: "rider_phone", type: "TEXT" },
+    { name: "rider_vehicle", type: "TEXT" },
+    { name: "pickup_otp", type: "TEXT", dflt: "'8514'" },
+    { name: "delivery_otp", type: "TEXT", dflt: "'4829'" },
+    { name: "delivery_fee", type: "REAL", dflt: "35" },
+    { name: "is_emergency", type: "INTEGER", dflt: "0" },
+    { name: "timeline_json", type: "TEXT" },
+    { name: "updated_at", type: "DATETIME", dflt: "CURRENT_TIMESTAMP" },
+  ];
+
+  for (const col of requiredColumns) {
+    if (!existingOrderColumns.includes(col.name)) {
+      try {
+        const defaultClause = col.dflt !== undefined ? ` DEFAULT ${col.dflt}` : "";
+        db.exec(`ALTER TABLE orders ADD COLUMN ${col.name} ${col.type}${defaultClause}`);
+      } catch (err: any) {
+        // Ignore column already exists or table lock
+      }
+    }
+  }
+
+  console.log("✅ SQLite Database & Orders schema initialized successfully at:", dbPath);
 }

@@ -31,7 +31,10 @@ import {
   Power,
   Edit3,
   Save,
-  Activity
+  Activity,
+  ShoppingCart,
+  Download,
+  ChevronRight
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,7 +56,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     phone: user.phone || "+91 98765 43210",
     location: user.location || "Flat 402, Shipra Sun City, Indirapuram, Ghaziabad",
     licenseNo: user.licenseNo || "UP-2021-00921",
-    vehicleType: user.vehicleType || "QuickMed EV Scooter (Cold Storage Box)",
+    vehicleType: user.vehicleType || "ArogyaSwift EV Scooter (Cold Storage Box)",
     shopName: user.shopName || "Apollo Express Pharmacy (Raj Nagar, Ghaziabad)",
   });
 
@@ -212,6 +215,54 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Recent Purchases & Invoices Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
+                    <Package className="w-4 h-4 text-emerald-600" /> Recent Purchase Orders
+                  </h4>
+                  <span className="text-xs text-emerald-700 font-bold">3 Orders Completed</span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-900">#QM-7821</span>
+                        <Badge className="bg-emerald-100 text-emerald-800 text-[10px] py-0">Delivered</Badge>
+                      </div>
+                      <p className="text-slate-600 font-medium mt-0.5">Lantus Solostar Pen & Janumet (₹1,540)</p>
+                      <span className="text-[10px] text-slate-400">Delivered yesterday • 3.6°C Cold-Chain</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => toast.success("Invoice downloaded for QM-7821!")}
+                      className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                    >
+                      <Download className="w-3 h-3 mr-1" /> Invoice
+                    </Button>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-900">#QM-6410</span>
+                        <Badge className="bg-emerald-100 text-emerald-800 text-[10px] py-0">Delivered</Badge>
+                      </div>
+                      <p className="text-slate-600 font-medium mt-0.5">Augmentin 625 Duo & Dolo 650 (₹385)</p>
+                      <span className="text-[10px] text-slate-400">28 Aug 2026 • OTP 7712 Verified</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => toast.success("Invoice downloaded for QM-6410!")}
+                      className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                    >
+                      <Download className="w-3 h-3 mr-1" /> Invoice
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -227,7 +278,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   <div>
                     <h5 className="font-extrabold text-sm text-white">Duty Status</h5>
                     <p className="text-xs text-slate-400">
-                      {riderOnDuty ? "🟢 Online & Accepting QuickMed Express Orders" : "🔴 Off Duty"}
+                      {riderOnDuty ? "🟢 Online & Accepting ArogyaSwift Express Orders" : "🔴 Off Duty"}
                     </p>
                   </div>
                 </div>
@@ -250,7 +301,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 </div>
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">Assigned Vehicle</span>
-                  <span className="font-extrabold text-sm text-slate-900 font-mono">QuickMed EV Scooter (KA-01-EV-9821)</span>
+                  <span className="font-extrabold text-sm text-slate-900 font-mono">ArogyaSwift EV Scooter (KA-01-EV-9821)</span>
                 </div>
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">Rider Rating</span>
@@ -263,6 +314,42 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   <span className="font-extrabold text-sm text-cyan-900 font-mono flex items-center gap-1">
                     <Thermometer className="w-4 h-4 text-cyan-600" /> 3.6 °C (Optimal Zone)
                   </span>
+                </div>
+              </div>
+
+              {/* Recent Delivery Runs */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
+                    <Bike className="w-4 h-4 text-emerald-600" /> Recent Delivery Runs
+                  </h4>
+                  <span className="text-xs text-emerald-700 font-bold">48 Trips Completed</span>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-900">Trip #DL-9821</span>
+                        <span className="text-emerald-700 font-bold font-mono">₹85 Earned</span>
+                      </div>
+                      <p className="text-slate-600 font-medium mt-0.5">Shipra Sun City, Indirapuram (4.2 km)</p>
+                      <span className="text-[10px] text-slate-400">24 mins • OTP 4829 • Cold Box 3.6°C</span>
+                    </div>
+                    <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Verified ✓</Badge>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-900">Trip #DL-9750</span>
+                        <span className="text-emerald-700 font-bold font-mono">₹95 Earned</span>
+                      </div>
+                      <p className="text-slate-600 font-medium mt-0.5">Tower B, Raj Nagar Ext (6.8 km)</p>
+                      <span className="text-[10px] text-slate-400">31 mins • OTP 6192 • Completed</span>
+                    </div>
+                    <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Verified ✓</Badge>
+                  </div>
                 </div>
               </div>
             </div>

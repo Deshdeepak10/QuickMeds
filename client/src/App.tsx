@@ -10,6 +10,14 @@ import { OwnerSecurityAuthModal } from "./components/OwnerSecurityAuthModal";
 import { PharmacyRegisterModal } from "./components/PharmacyRegisterModal";
 import { PhoneSignupModal } from "./components/PhoneSignupModal";
 import { CustomerSupportAgent } from "./components/CustomerSupportAgent";
+import { LiveOrderDemoModal } from "./components/LiveOrderDemoModal";
+import { LegalCenterModal } from "./components/LegalCenterModal";
+import { CookieConsentModal } from "./components/CookieConsentModal";
+import { EmailVerificationModal } from "./components/EmailVerificationModal";
+import { PasswordResetModal } from "./components/PasswordResetModal";
+import { OnboardingTourModal } from "./components/OnboardingTourModal";
+import { AccountSettingsModal } from "./components/AccountSettingsModal";
+import { HelpCenterModal } from "./components/HelpCenterModal";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import MedicineMVP from "./pages/MedicineMVP";
 import LoginHome from "./pages/LoginHome";
@@ -45,6 +53,14 @@ function App() {
             <PharmacyRegisterModal />
             <PhoneSignupModal />
             <CustomerSupportAgent />
+            <LiveOrderDemoModal />
+            <LegalCenterModal />
+            <CookieConsentModal />
+            <EmailVerificationModal />
+            <PasswordResetModal />
+            <OnboardingTourModal />
+            <AccountSettingsModal />
+            <HelpCenterModal />
             <Router />
           </TooltipProvider>
         </AuthProvider>
