@@ -228,6 +228,7 @@ export default function MedicineMVP() {
     quickSwitchRole,
     setIsDemoModalOpen,
     openLegalPolicy,
+    openHelpCenter,
     setIsCookiePreferencesOpen,
     setIsOnboardingOpen,
     setIsHelpCenterOpen,
@@ -885,7 +886,7 @@ export default function MedicineMVP() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setIsHelpCenterOpen(true)}
+              onClick={openHelpCenter}
               className="h-7 px-2.5 bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 text-xs font-semibold rounded-xl"
             >
               Help & FAQs
@@ -3711,7 +3712,7 @@ export default function MedicineMVP() {
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setIsHelpCenterOpen(true)} className="hover:text-emerald-400 text-left transition-colors font-semibold text-emerald-300">
+                  <button onClick={openHelpCenter} className="hover:text-emerald-400 text-left transition-colors font-semibold text-emerald-300">
                     Help Center & FAQs
                   </button>
                 </li>
@@ -3736,7 +3737,7 @@ export default function MedicineMVP() {
               •
               <button
                 type="button"
-                onClick={() => setIsHelpCenterOpen(true)}
+                onClick={openHelpCenter}
                 className="text-slate-400 hover:text-emerald-400 transition-colors"
               >
                 Support Center

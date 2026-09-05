@@ -24,6 +24,7 @@ export default function LoginHome() {
     setPhoneSignupRole,
     setIsDemoModalOpen,
     openLegalPolicy,
+    openHelpCenter,
     setIsCookiePreferencesOpen,
     setIsOnboardingOpen,
     setIsHelpCenterOpen,
@@ -59,7 +60,7 @@ export default function LoginHome() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setIsHelpCenterOpen(true)}
+              onClick={openHelpCenter}
               className="text-xs h-8 border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold"
             >
               Help & FAQs
@@ -390,7 +391,7 @@ export default function LoginHome() {
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setIsHelpCenterOpen(true)} className="hover:text-emerald-400 text-left transition-colors font-semibold text-emerald-300">
+                  <button onClick={openHelpCenter} className="hover:text-emerald-400 text-left transition-colors font-semibold text-emerald-300">
                     Help Center & FAQs
                   </button>
                 </li>

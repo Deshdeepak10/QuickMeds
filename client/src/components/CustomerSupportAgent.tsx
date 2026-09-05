@@ -154,8 +154,20 @@ const WELCOME_MESSAGES: Record<SupportedLanguage, string> = {
 };
 
 export function CustomerSupportAgent() {
-  const { user, setIsPharmacyRegisterModalOpen, setIsOwnerAuthModalOpen } = useAuth();
+  const {
+    user,
+    setIsPharmacyRegisterModalOpen,
+    setIsOwnerAuthModalOpen,
+    isAiSupportOpen,
+    setIsAiSupportOpen,
+  } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (isAiSupportOpen) {
+      setIsOpen(true);
+    }
+  }, [isAiSupportOpen]);
 
   const [language, setLanguage] = useState<SupportedLanguage>("en");
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
@@ -759,7 +771,10 @@ export function CustomerSupportAgent() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsAiSupportOpen(false);
+                }}
                 className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/10 rounded-lg"
               >
                 <X className="w-5 h-5" />

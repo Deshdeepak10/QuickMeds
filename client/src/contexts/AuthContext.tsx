@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useLocation } from "wouter";
 
 export type UserRole = "patient" | "pharmacy" | "rider" | "admin";
 
@@ -237,6 +238,7 @@ interface AuthContextType {
   legalModalTab: LegalPolicyId;
   setLegalModalTab: (tab: LegalPolicyId) => void;
   openLegalPolicy: (policyId: LegalPolicyId) => void;
+  openHelpCenter: () => void;
   isCookiePreferencesOpen: boolean;
   setIsCookiePreferencesOpen: (open: boolean) => void;
   isOnboardingOpen: boolean;
@@ -249,11 +251,14 @@ interface AuthContextType {
   setIsEmailVerifyOpen: (open: boolean) => void;
   isPasswordResetOpen: boolean;
   setIsPasswordResetOpen: (open: boolean) => void;
+  isAiSupportOpen: boolean;
+  setIsAiSupportOpen: (open: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [, setLocation] = useLocation();
   const [user, setUser] = useState<UserSession>(PRESET_USERS.patient);
   const [token, setToken] = useState<string | null>(() => localStorage.getItem("arogyaswift_jwt"));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -276,10 +281,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isHelpCenterOpen, setIsHelpCenterOpen] = useState(false);
   const [isEmailVerifyOpen, setIsEmailVerifyOpen] = useState(false);
   const [isPasswordResetOpen, setIsPasswordResetOpen] = useState(false);
+  const [isAiSupportOpen, setIsAiSupportOpen] = useState(false);
 
   const openLegalPolicy = (policyId: LegalPolicyId) => {
     setLegalModalTab(policyId);
-    setIsLegalModalOpen(true);
+    setIsLegalModalOpen(false); // Close modal if open
+    setLocation(`/legal/${policyId}`);
+  };
+
+  const openHelpCenter = () => {
+    setIsHelpCenterOpen(false);
+    setLocation("/help");
   };
 
   const [registeredPharmacies, setRegisteredPharmacies] = useState<PharmacyStoreData[]>([
@@ -737,6 +749,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         legalModalTab,
         setLegalModalTab,
         openLegalPolicy,
+        openHelpCenter,
         isCookiePreferencesOpen,
         setIsCookiePreferencesOpen,
         isOnboardingOpen,
@@ -749,6 +762,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsEmailVerifyOpen,
         isPasswordResetOpen,
         setIsPasswordResetOpen,
+        isAiSupportOpen,
+        setIsAiSupportOpen,
       }}
     >
       {children}

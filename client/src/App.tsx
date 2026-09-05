@@ -21,13 +21,18 @@ import { HelpCenterModal } from "./components/HelpCenterModal";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import MedicineMVP from "./pages/MedicineMVP";
 import LoginHome from "./pages/LoginHome";
-
+import LegalPage from "./pages/LegalPage";
+import HelpPage from "./pages/HelpPage";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={LoginHome} />
       <Route path="/login" component={LoginHome} />
+      <Route path="/legal" component={LegalPage} />
+      <Route path="/legal/:policyId" component={LegalPage} />
+      <Route path="/help" component={HelpPage} />
+      <Route path="/faqs" component={HelpPage} />
       <Route path="/app">
         <ProtectedRoute component={MedicineMVP} />
       </Route>
